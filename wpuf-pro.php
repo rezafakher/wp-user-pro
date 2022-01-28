@@ -4,7 +4,7 @@ Plugin Name: WP User Frontend Pro - business
 Plugin URI: https://wedevs.com/wp-user-frontend-pro/
 Description: The paid module to add extra features on WP User Frontend.
 Author: weDevs
-Version: 3.4.4
+Version: 3.4.8
 Author URI: https://wedevs.com
 License: GPL2
 TextDomain: wpuf-pro
@@ -214,7 +214,7 @@ class WP_User_Frontend_Pro {
      * @return void
      */
     private function define_constants() {
-        define( 'WPUF_PRO_VERSION', '3.4.4' );
+        define( 'WPUF_PRO_VERSION', '3.4.8' );
         define( 'WPUF_PRO_FILE', __FILE__ );
         define( 'WPUF_PRO_ROOT', __DIR__ );
         define( 'WPUF_PRO_INCLUDES', WPUF_PRO_ROOT . '/includes' );
@@ -229,6 +229,7 @@ class WP_User_Frontend_Pro {
      * @return void
      */
     public function includes() {
+        require_once WPUF_PRO_INCLUDES . '/functions.php';
         require_once WPUF_ROOT . '/class/render-form.php';
         require_once WPUF_PRO_INCLUDES . '/frontend-form-profile.php';
         require_once WPUF_PRO_INCLUDES . '/updates.php';
@@ -248,6 +249,7 @@ class WP_User_Frontend_Pro {
             require_once WPUF_PRO_ROOT . '/admin/profile-forms-list-table.php';
 
             require_once WPUF_PRO_ROOT . '/includes/class-whats-new.php';
+            require_once WPUF_PRO_ROOT . '/includes/class-contacts.php';
             require_once WPUF_PRO_ROOT . '/admin/blocks/partial-content-restriction/block.php';
         }
 
@@ -279,7 +281,8 @@ class WP_User_Frontend_Pro {
         require_once WPUF_PRO_INCLUDES . '/class-frontend-account.php';
         require_once WPUF_PRO_INCLUDES . '/class-content-filter.php';
         require_once WPUF_PRO_INCLUDES . '/class-events-plugins-integration.php';
-        require_once WPUF_PRO_ROOT . '/includes/class-partial-content-restriction.php';
+        require_once WPUF_PRO_INCLUDES . '/class-partial-content-restriction.php';
+        require_once WPUF_PRO_INCLUDES . '/class-post-status-change.php';
 
         if ( ! function_exists( 'wpuf_pro_get_active_modules' ) ) {
             require_once WPUF_PRO_INCLUDES . '/modules.php';
@@ -322,6 +325,7 @@ class WP_User_Frontend_Pro {
 
         new WPUF_Pro_Fields_Manager();
         new WPUF_Partial_Content_Restriction();
+        new WPUF_Post_Status_Notification();
 
         if ( is_admin() ) {
             new WPUF_Admin_Form_Pro();
@@ -332,6 +336,7 @@ class WP_User_Frontend_Pro {
             new WPUF_Pro_Whats_New();
             WPUF_Coupons::init();
             new WPUF_Block_Partial_Content();
+            new WPUF_Contact();
         }
 
         new WPUF_Updates( $this->plan );
@@ -376,6 +381,9 @@ class WP_User_Frontend_Pro {
         //post expiration handle for edit
         //add_action( 'add_meta_boxes', [ $this, 'wpuf_post_will_expire_or_not' ] );//need to gutenberg compaitable
         add_action( 'save_post', [ $this, 'wpuf_handle_expire' ] );
+        //Bulk form id for existing post
+        add_action( 'manage_posts_extra_tablenav', [ $this, 'add_form_dropdown' ] );
+        add_action( 'admin_head-edit.php', [ $this, 'assign_bulk_form_id' ] );
     }
 
     /**
@@ -620,7 +628,7 @@ class WP_User_Frontend_Pro {
     /**
      * Add expire column
      *
-     * @since WPUF_PRO
+     * @since 3.4.7
      *
      * @param $columns
      *
@@ -635,7 +643,7 @@ class WP_User_Frontend_Pro {
     /**
      * Add will expire column for quick edit
      *
-     * @since WPUF_PRO
+     * @since 3.4.7
      *
      * @param $column_name
      * @param $post_type
@@ -696,7 +704,7 @@ class WP_User_Frontend_Pro {
     /**
      * Unset expire column
      *
-     * @since WPUF_PRO
+     * @since 3.4.7
      *
      * @param $column
      * @param $post_type
@@ -712,7 +720,7 @@ class WP_User_Frontend_Pro {
     /**
      * Handle quick edit ajax for expire column
      *
-     * @since WPUF_PRO
+     * @since 3.4.7
      *
      * @return WP_REST_Response
      */
@@ -759,7 +767,7 @@ class WP_User_Frontend_Pro {
     /**
      * Has expiration belongs to a post
      *
-     * @since WPUF_PRO
+     * @since 3.4.7
      *
      * @param $post_id
      *
@@ -772,7 +780,7 @@ class WP_User_Frontend_Pro {
     /**
      * Handle expire meta
      *
-     * @since WPUF_PRO
+     * @since 3.4.7
      *
      * @param $post_id
      */
@@ -795,6 +803,83 @@ class WP_User_Frontend_Pro {
         if ( $current_status === 'publish' && $current_status !== null ) {
             delete_post_meta( $post_id, 'wpuf-post_expiration_date' );
         }
+    }
+
+    /**
+     * Add form list to dropdown
+     *
+     * @param $which
+     *
+     * @since 3.4.7
+     *
+     * @return void
+     */
+    public function add_form_dropdown( $which ) {
+        if ( ! $this->is_valid_post_type() ) {
+            return;
+        }
+
+        $forms = get_posts(
+            [
+                'post_type' => 'wpuf_forms',
+                'post_status' => 'any',
+            ]
+        );
+
+        if ( ! empty( $_GET['post_type'] ) && $which === 'top' ) {
+            ?>
+            <div class="alignleft actions bulkactions">
+                <label for="bulk-action-selector-top" class="screen-reader-text">Select bulk action</label>
+                <select name="wpuf_form_id">
+                    <option value="0">Select Form</option>
+                    <?php foreach ( $forms as $form ) { ?>
+                        <option value="<?php echo $form->ID; ?>"><?php echo $form->post_title; ?></option>
+                    <?php } ?>
+                </select>
+                <?php submit_button( __( 'Add Form', 'wpuf-pro' ), '', 'add_wpuf_form_id', false, array( 'id' => 'post-query-submit' ) ); ?>
+            </div>
+            <?php
+        }
+    }
+
+    /**
+     * Assign bulk form id to post
+     *
+     * @since 3.4.7
+     *
+     * @return void
+     */
+    public function assign_bulk_form_id() {
+        if ( ! $this->is_valid_post_type() ) {
+            return;
+        }
+
+        $form_id = ! empty( $_GET['wpuf_form_id'] ) ? sanitize_text_field( wp_unslash( $_GET['wpuf_form_id'] ) ) : '';
+        //phpcs:ignore
+        $posts   = ! empty( $_GET['post'] ) ? $_GET['post']  : '';
+
+        if ( $posts && ! empty( $_GET['add_wpuf_form_id'] ) && $_GET['add_wpuf_form_id'] === 'Add Form' && $form_id > 0 ) {
+            foreach ( $posts as $post_id ) {
+                update_post_meta( $post_id, '_wpuf_form_id', $form_id );
+            }
+        }
+    }
+
+    /**
+     * Determine if valid post type
+     *
+     * @since 3.4.7
+     *
+     * @return bool
+     */
+    public function is_valid_post_type() {
+        $post_type = ! empty( $_GET['post_type'] ) ? sanitize_text_field( wp_unslash( $_GET['post_type'] ) ) : '';
+
+        if ( in_array( $post_type, wpuf_get_post_types(), true ) ) {
+            return true;
+        }
+
+        return false;
     }
 }
 
