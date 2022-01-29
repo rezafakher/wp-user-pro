@@ -52,8 +52,8 @@ class WPUF_Updates {
             }
 
         } else {
-            add_action( 'admin_notices', array($this, 'license_enter_notice') );
-            add_action( 'admin_notices', array($this, 'license_check_notice') );
+            // add_action( 'admin_notices', array($this, 'license_enter_notice') );
+            // add_action( 'admin_notices', array($this, 'license_check_notice') );
         }
 
         add_filter( 'pre_set_site_transient_update_plugins', array($this, 'check_update') );
