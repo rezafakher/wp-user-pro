@@ -343,7 +343,6 @@ class WPUF_Pro_Render_Form {
             || ( isset( $_GET['wpuf_preview'] ) && isset($_GET['form_id']) )
         ) {
             wp_enqueue_style( 'wpuf-rating-star-css', WPUF_PRO_ASSET_URI . '/css/css-stars.css' );
-            wp_enqueue_style( 'wpuf-math-captcha-css', WPUF_PRO_ASSET_URI . '/css/frontend/fields/math-captcha.css' );
 
             wp_enqueue_script( 'wpuf-rating-js', WPUF_PRO_ASSET_URI . '/js/jquery.barrating.min.js', array( 'jquery' ) );
             wp_enqueue_script( 'wpuf-conditional-logic', WPUF_PRO_ASSET_URI . '/js/conditional-logic.js', array('jquery'), false, true );

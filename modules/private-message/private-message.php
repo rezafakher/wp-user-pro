@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Private Message
-Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/private-messaging/
+Plugin URI: http://wedevs.com/plugin/wp-user-frontend-pro/
 Thumbnail Name: message.gif
 Description: User to user message from Frontend
 Version: 1.0
@@ -35,6 +35,7 @@ License: GPL2
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  * **********************************************************************
  */
+
 // don't call the file directly
 if ( !defined( 'ABSPATH' ) ) exit;
 
@@ -57,31 +58,17 @@ class WPUF_Private_Message {
      * @uses add_action()
      */
     public function __construct() {
-        $this->includes();
-        $this->init_classes();
-
         add_filter( 'wpuf_account_sections', array( $this, 'user_message_menu' ) );
-        add_action( 'wpuf_account_content_message', array( $this, 'user_message_section' ), 99, 2 );
-    }
+        add_action( 'wpuf_account_content_message', array( $this, 'user_message_section' ), 10, 2 );
 
-    /**
-     * Includes all required classes
-     *
-     * @return void
-     */
-    public function includes() {
-        require_once dirname( __FILE__ ) . '/class-conversation.php';
-        require_once dirname( __FILE__ ) . '/class-private-message-ajax.php';
-    }
+        add_action( 'wp_ajax_wpuf_pm_route_data_index', array( $this, 'route_index' ) );
+        add_action( 'wp_ajax_wpuf_pm_message_search', array( $this, 'message_search' ) );
+        add_action( 'wp_ajax_wpuf_pm_delete_message', array( $this, 'message_delete' ) );
+        add_action( 'wp_ajax_wpuf_pm_fetch_users', array( $this, 'fetch_users' ) );
 
-    /**
-     * Instantiate required classes
-     *
-     * @return void
-     */
-    public function init_classes() {
-        new WPUF_Private_Message_Ajax();
-        new WPUF_Conversation();
+        add_action( 'wp_ajax_wpuf_pm_route_data_message', array( $this, 'personal_message' ) );
+        add_action( 'wp_ajax_wpuf_pm_message_send', array( $this, 'message_send' ) );
+        add_action( 'wp_ajax_wpuf_pm_delete_single_message', array( $this, 'single_message_delete' ) );
     }
 
     /**
@@ -150,7 +137,7 @@ class WPUF_Private_Message {
      * @return array
      */
     function user_message_menu( $sections ) {
-        $sections = array_merge( $sections, [ 'message' => __( 'Message', 'wpuf-pro' ) ] );
+        $sections = array_merge( $sections, array( array( 'slug' => 'message', 'label' => 'Message' ) ) );
         return $sections;
     }
 
@@ -179,7 +166,6 @@ class WPUF_Private_Message {
 
         wp_enqueue_style( 'wpuf-private-message', WPUF_PM_DIR . '/assets/css/frontend.css', [], false );
         wp_enqueue_script( 'wpuf-private-message', WPUF_PM_DIR . '/assets/js/frontend.js', ['jquery', 'wpuf-vue', 'wpuf-vuex', 'wpuf-vue-router'], false, true );
-        wp_enqueue_script( 'wpuf-private-message-script', WPUF_PM_DIR . '/assets/js/script.js', ['jquery'], false, true );
 
         wp_localize_script( 'wpuf-private-message', 'wpufPM', [
             'ajaxurl' => admin_url( 'admin-ajax.php' )
@@ -193,6 +179,199 @@ class WPUF_Private_Message {
      */
     public function render_user_list() {
         include dirname( __FILE__ ) . '/templates/modal.php';
+    }
+
+    public function route_index() {
+        $data['messages'] = $this->get_messages();
+
+        wp_send_json_success( $data );
+    }
+
+    public function message_search() {
+        $args = [
+            's' => ! empty( $_GET['content'] ) ? $_GET['content'] : ''
+        ];
+
+        sleep(0.1);
+        $data = [
+            'messages' => $this->get_messages( $args )
+        ];
+
+        wp_send_json_success( $data );
+    }
+
+    public function fetch_users() {
+        $data = [
+            'list' => $this->users_list( $_POST['s'] )
+        ];
+
+        wp_send_json_success( $data );
+    }
+
+    public function users_list( $s='' ) {
+        $users_query = new WP_User_Query( array(
+            'search'         => '*'.esc_attr( $s ).'*',
+            'search_columns' => array(
+                'user_login',
+                'user_nicename',
+                'user_email',
+                'user_url',
+            ),
+        ) );
+        $users = $users_query->get_results();
+        ob_start();
+        ?>
+        <?php foreach ($users as $user) { ?>
+            <li class="user">
+                <a href="<?php echo '#/user/'.$user->data->ID; ?>"><?php echo get_avatar($user->data->ID, 80). '<br>' .$user->data->user_login; ?></a>
+            </li>
+        <?php }
+        return ob_get_clean();
+    }
+
+    public function get_messages( $args = [] ) {
+        global $wpdb;
+
+        $sql = "SELECT * FROM " . $wpdb->prefix . "wpuf_message WHERE ";
+        $sql .= !empty( $args['s'] ) ? "`message` LIKE '%" . $args['s'] . "%' AND " : '';
+        $sql .= "((`from` = %d AND `from_del` = 0) OR (`to` = %d AND `to_del` = 0)) ORDER BY `created` DESC";
+
+        $sql = $wpdb->prepare( $sql, get_current_user_id(), get_current_user_id() );
+
+        $results = $wpdb->get_results( $sql );
+        $users = array();
+        foreach ( $results as $value ) {
+            $user_id = get_current_user_id() == $value->from ? $value->to : $value->from;
+            if ( !in_array( $user_id, $users ) ) {
+                $users[] = $user_id;
+            }
+        }
+
+        $users = count( $users ) > 10 ? array_slice( $users, 0, 10)  : $users;
+        $messages = array();
+        foreach ( $users as $user_id) {
+            $sql = $wpdb->prepare( "SELECT *
+                FROM " . $wpdb->prefix . "wpuf_message
+                WHERE ((`from` = %d AND `from_del` = 0) OR (`to` = %d AND `to_del` = 0)) AND (`from` = %d OR `to` = %d) ORDER BY created DESC LIMIT 1", get_current_user_id(), get_current_user_id(), $user_id, $user_id );
+
+            $results = $wpdb->get_results( $sql );
+
+            foreach ($results as $key => $value) {
+                $status = 'single';
+                if ( get_current_user_id() == $value->from ) {
+                    $user_id = $value->to;
+                } else {
+                    $user_id = $value->from;
+                    if ( 0 == $value->status ) {
+                        $status = 'single unread';
+                    }
+                }
+
+                $user_info = get_userdata( $user_id );
+                $messages[] = array(
+                    'user_id' => $user_id,
+                    'user_name' => $user_info->user_login,
+                    'message' => $value->message,
+                    'status' => $status,
+                    'time' => date("M d,g:i a", strtotime( $value->created ) ),
+                    'del_img' => WPUF_ASSET_URI . '/images/del-pm.png',
+                );
+            }
+        }
+
+        return $messages;
+    }
+
+    public function message_delete(){
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT `id`, `from` FROM " . $wpdb->prefix . "wpuf_message
+                 WHERE ((`from` = %d AND `from_del` = 0) OR (`to` = %d AND `to_del` = 0)) AND (`from` = %d OR `to` = %d)", get_current_user_id(), get_current_user_id(), $_GET['id'], $_GET['id'] );
+
+        $results = $wpdb->get_results( $sql );
+
+        foreach ($results as $result) {
+
+            $update_row = get_current_user_id() == $result->from ? 'from_del' : 'to_del';
+
+            $sql = $wpdb->prepare( "UPDATE " . $wpdb->prefix . "wpuf_message SET `" . $update_row . "`= 1 WHERE `id` = %d", $result->id );
+
+            $update = $wpdb->get_results( $sql );
+        }
+
+        $data['messages'] = $this->get_messages();
+
+        wp_send_json_success( $data );
+    }
+
+    public function personal_message() {
+        global $wpdb;
+        $data = [];
+
+        $sql = $wpdb->prepare( "UPDATE " . $wpdb->prefix . "wpuf_message SET `status`= 1 WHERE `to` = %d AND `from` = %d", get_current_user_id(), $_GET['userId'] );
+
+        $results = $wpdb->get_results( $sql );
+
+        $sql = $wpdb->prepare( "SELECT *
+                FROM " . $wpdb->prefix . "wpuf_message
+                 WHERE ((`from` = %d AND `from_del` = 0) OR (`to` = %d AND `to_del` = 0)) AND (`from` = %d OR `to` = %d)", get_current_user_id(), get_current_user_id(), $_GET['userId'], $_GET['userId'] );
+
+        $results = $wpdb->get_results( $sql );
+
+        $response = array();
+
+        foreach ($results as $key => $value) {
+            $chat_class = 'chat';
+            if( get_current_user_id() == $value->from ) {
+                $chat_class = 'chat darker';
+            }
+
+            $user_info = get_userdata( $value->from );
+            $response[] = array(
+                'message_id' => $value->id,
+                'user_id' => $value->from,
+                'user_name' => $user_info->user_login,
+                'avatar' => esc_url( get_avatar_url( $user_id ) ),
+                'message' => $value->message,
+                'time' => date("M d,g:i a", strtotime( $value->created ) ), //full time: "F j, Y, g:i a"
+                'chat_class' => $chat_class,
+                'del_img' => WPUF_ASSET_URI . '/images/del-pm.png',
+            );
+
+        }
+
+        $chat_with = get_userdata( $_GET['userId'] );
+        $data['chat_with'] = $chat_with->user_login;
+        $data['messages'] = $response;
+
+        wp_send_json_success( $data );
+    }
+
+    public function message_send() {
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "INSERT INTO " . $wpdb->prefix . "wpuf_message
+        (`from`, `to`, `message`, `status`, `from_del`, `to_del`, `created`)
+        VALUES ('%d', '%d', '%s', 0, 0, 0, '%s')", get_current_user_id(), $_GET['userId'], $_GET['message'], wpuf_date2mysql( date("M d,g:i a") ) );
+
+        $results = $wpdb->get_results( $sql );
+        $this->personal_message();
+    }
+
+    public function single_message_delete(){
+        global $wpdb;
+
+        $sql = $wpdb->prepare( "SELECT *
+                FROM " . $wpdb->prefix . "wpuf_message
+                 WHERE `id` = %d", $_GET['id'] );
+
+        $result = $wpdb->get_row( $sql );
+        $update_row = get_current_user_id() == $result->from ? 'from_del' : 'to_del';
+
+        $sql = $wpdb->prepare( "UPDATE " . $wpdb->prefix . "wpuf_message SET `" . $update_row . "`= 1 WHERE `id` = %d", $_GET['id'] );
+
+        $result = $wpdb->get_results( $sql );
+        $this->personal_message();
     }
 
 } // WPUF_Private_Message

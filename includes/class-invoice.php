@@ -9,7 +9,7 @@ class WPUF_Pro_Invoice {
 
     private static $_instance;
 
-    public function __construct() {
+    function __construct() {
         require_once WPUF_PRO_INCLUDES . '/libs/invoicr/invoicr.php';
 
         add_action( 'wpuf_payment_received', array( $this, 'generate_invoice' ), 100, 2 );
@@ -20,7 +20,7 @@ class WPUF_Pro_Invoice {
     }
 
     public static function init() {
-        if ( ! self::$_instance ) {
+        if ( !self::$_instance ) {
             self::$_instance = new self();
         }
 
@@ -28,18 +28,20 @@ class WPUF_Pro_Invoice {
     }
 
     public function wpuf_pro_settings_tab( $settings ) {
+
         $settings2 = array(
             array(
                 'id'    => 'wpuf_payment_invoices',
-                'title' => __( 'Invoices', 'wpuf-pro' ),
-                'icon' => 'dashicons-media-spreadsheet',
-            ),
+                'title' => __( 'Invoices', 'wpuf' ),
+                'icon' => 'dashicons-media-spreadsheet'
+            )
         );
 
-        return array_merge( $settings, $settings2 );
+        return array_merge( $settings, $settings2);
     }
 
     public function wpuf_pro_settings_content( $settings_fields ) {
+
         $settings_fields2 = array(
             'wpuf_payment_invoices' => array(
                 array(
@@ -111,8 +113,8 @@ class WPUF_Pro_Invoice {
                     'label'    => __( 'Set Invoice Mail Body', 'wpuf-pro' ),
                     'desc'     => __( 'This sets the mail body of the Invoice', 'wpuf-pro' ),
                     'type'     => 'textarea',
-                ),
-            ),
+                )
+            )
         );
 
         return array_merge( $settings_fields, $settings_fields2 );
@@ -124,48 +126,27 @@ class WPUF_Pro_Invoice {
         $enable_invoices  = wpuf_get_option( 'enable_invoices', 'wpuf_payment_invoices', 'on' );
         $show_invoice     = wpuf_get_option( 'show_invoices', 'wpuf_payment_invoices', 'on' );
         $inv_logo         = wpuf_get_option( 'set_logo', 'wpuf_payment_invoices' );
-        $inv_color        = wpuf_get_option( 'set_color', 'wpuf_payment_invoices', '#e435226' );
+        $inv_color        = wpuf_get_option( 'set_color', 'wpuf_payment_invoices','#e435226' );
         $inv_from_addr    = wpuf_get_option( 'set_from_address', 'wpuf_payment_invoices' );
         $inv_from_addr    = explode( '<br>', $inv_from_addr );
+        $results          = $wpdb->get_results("SELECT payer_address FROM {$wpdb->prefix}wpuf_transaction WHERE user_id={$data['user_id']} ORDER BY id DESC LIMIT 1");
         $inv_to_addr      = array();
         $addr             = array();
 
         if ( wpuf_get_option( 'show_address', 'wpuf_address_options', false ) ) {
-            if ( ! empty( $data['payer_address'] ) ) {
-                $payer_address = $data['payer_address'];
-            } else {
-                $payer_address = $wpdb->get_var(
-                    $wpdb->prepare(
-                        "SELECT payer_address FROM {$wpdb->prefix}wpuf_transaction WHERE transaction_id = %s",
-                        $data['transaction_id']
-                    )
-                );
-            }
-
-            if ( ! empty( $payer_address ) ) {
-                $addr = maybe_unserialize( $payer_address );
+            foreach ( $results as $result ) {
+                $addr = $result->payer_address;
+                $addr = unserialize( $addr );
             }
         }
 
-        if ( ! empty( $data['payer_first_name'] ) && ! empty( $data['payer_last_name'] ) ) {
+        if ( !empty( $data['payer_first_name'] ) && !empty( $data['payer_last_name'] ) ) {
             $inv_to_addr[] = $data['payer_first_name'] . ' ' . $data['payer_last_name'];
         } else {
             $inv_to_addr[] = $data['payer_email'];
         }
 
-        if ( ! empty( $addr['billing_country'] ) ) {
-            $country_state = new CountryState();
-            $countries     = $country_state->countries();
-            $country       = $country_state->getCountry( $addr['billing_country'] );
-
-            if ( ! empty( $countries[ $addr['billing_country'] ] ) ) {
-                $addr['billing_country'] = $countries[ $addr['billing_country'] ];
-            }
-
-            if ( ! empty( $country[6][ $addr['billing_state'] ] ) ) {
-                $addr['billing_state'] = $country[6][ $addr['billing_state'] ];
-            }
-
+        if ( !empty( $addr ) ) {
             foreach ( $addr as $key => $value ) {
                 $inv_to_addr[] = $value;
             }
@@ -177,7 +158,6 @@ class WPUF_Pro_Invoice {
         $inv_filename     = wpuf_get_option( 'set_filename', 'wpuf_payment_invoices' );
         $inv_u_id         = $data['user_id'];
         $inv_status       = $data['status'];
-        $inv_subtotal     = $data['subtotal'];
         $inv_cost         = $data['cost'];
         $inv_pack         = $data['pack_id'];
         $inv_u_fname      = $data['payer_first_name'];
@@ -186,55 +166,46 @@ class WPUF_Pro_Invoice {
         $inv_payment_type = $data['payment_type'];
         $inv_id           = isset( $data['transaction_id'] ) ? $data['transaction_id'] : 1;
         $inv_dt           = $data['created'];
-        $inv_dt           = new DateTime( $inv_dt );
-        $inv_date         = $inv_dt->format( 'Y-m-d' );
+        $inv_dt           = new DateTime($inv_dt);
+        $inv_date         = $inv_dt->format('Y-m-d');
 
         $currency         = wpuf_get_option( 'currency', 'wpuf_payment', 'USD' );
-        $invoice          = new invoicr( 'A4', $currency, 'en' );
+        $invoice          = new invoicr("A4",$currency,"en");
 
-        $invoice->setNumberFormat( '.', ',' );
+        $invoice->setNumberFormat('.',',');
 
-        if ( ! $inv_logo ) {
+        if ( !$inv_logo ) {
             $inv_logo = WPUF_PRO_INCLUDES . '/libs/invoicr/req/dummy_logo.jpg';
             $invoice->setLogo( $inv_logo, 100, 88 );
         } else {
             $invoice->setLogo( $inv_logo, 100, 88 );
         }
 
-        $post_id = ! empty( $data['post_id'] ) ? intval( $data['post_id'] ) : $inv_pack;
-
-        $post      = get_post( $post_id );
-        $item_name = mb_strimwidth( $post->post_title, 0, 20, '...' );
-
-        if ( 'post' === $post->post_type ) {
-            $item_name = sprintf( __( 'Payment for post submission', 'wpuf-pro' ) . ' (%s)', $item_name );
-        }
-
         $tax_amount = wpuf_current_tax_rate();
-        $invoice->setColor( $inv_color );
-        $invoice->setType( __( 'Invoice', 'wpuf-pro' ) );
-        $invoice->setReference( $inv_id );
-        $invoice->setDate( $inv_date );
+        $invoice->setColor($inv_color);
+        $invoice->setType( __("Invoice", "wpuf-pro") );
+        $invoice->setReference($inv_id);
+        $invoice->setDate($inv_date);
         $invoice->setFrom( $inv_from_addr );
         $invoice->setTo( $inv_to_addr );
-        $invoice->addItem( $item_name, false, $inv_subtotal, $tax_amount . '%', $inv_cost, false, $inv_subtotal );
-        $invoice->addTotal( __( 'Total', 'wpuf-pro' ), $inv_subtotal );
-        $invoice->addTotal( __( 'Payment Type', 'wpuf-pro' ), $inv_payment_type );
-        $invoice->addTotal( __( 'Total due', 'wpuf-pro' ), $inv_subtotal, true );
-        $invoice->addBadge( $inv_status );
-        $invoice->addTitle( $inv_title );
-        $invoice->addParagraph( $inv_para );
-        $invoice->setFooternote( $inv_foot );
+        $invoice->addItem($inv_pack,false,$inv_cost,$tax_amount . '%',$inv_cost,false,$inv_cost);
+        $invoice->addTotal( __("Total", "wpuf-pro"), $inv_cost );
+        $invoice->addTotal( __("Payment Type", "wpuf-pro"), $inv_payment_type );
+        $invoice->addTotal( __("Total due", "wpuf-pro"), $inv_cost, true );
+        $invoice->addBadge($inv_status);
+        $invoice->addTitle($inv_title);
+        $invoice->addParagraph($inv_para);
+        $invoice->setFooternote($inv_foot);
 
-        $inv_dir = WP_CONTENT_DIR . '/uploads/wpuf-invoices/';
+        $inv_dir = WP_CONTENT_DIR .'/uploads/wpuf-invoices/';
 
-        if ( ! file_exists( $inv_dir ) ) {
-            mkdir( $inv_dir, 0777, true );
+        if (!file_exists( $inv_dir ) ) {
+            mkdir( $inv_dir , 0777, true );
         }
 
         $pdf_file = $inv_dir . "{$inv_u_id}_{$inv_filename}_{$inv_id}.pdf";
 
-        if ( ! $pdf_file ) {
+        if ( !$pdf_file ) {
             $pdf_file = $inv_u_id . 'invoice.pdf';
         }
 
@@ -244,23 +215,24 @@ class WPUF_Pro_Invoice {
 
         global $pagenow;
 
-        if ( 'on' === $enable_invoices ) {
-            if ( $pagenow === 'profile.php' || $pagenow === 'user-edit.php' ) {
-                $invoice->render( $pdf_file, 'F' );
-                $assign_noti = ( get_user_meta( $inv_u_id, '_pack_assign_notification', true ) === 'true' ) ? true : false;
+        if ( 'on' == $enable_invoices ) {
+            if ( $pagenow == 'profile.php' || $pagenow == 'user-edit.php' )  {
+                $invoice->render( $pdf_file, 'F');
+                $assign_noti = (get_user_meta( $inv_u_id, '_pack_assign_notification', true ) == 'true') ? true : false;
 
                 if ( $assign_noti ) {
                     $this->send_invoice( $pdf_file, $inv_u_email );
                 }
             } else {
-                $invoice->render( $pdf_file, 'F' );
+                $invoice->render( $pdf_file, 'F');
                 $this->send_invoice( $pdf_file, $inv_u_email );
             }
         }
+
     }
 
     public function enable_sub_noti_email( $user_id ) {
-        $checked = ( get_user_meta( $user_id, '_pack_assign_notification', true ) === 'true' ) ? 'checked' : '';
+        $checked = ( get_user_meta( $user_id, '_pack_assign_notification', true ) == 'true' ) ? 'checked' : '';
         ?>
         <table>
             <tr>
@@ -269,11 +241,12 @@ class WPUF_Pro_Invoice {
             <td><input type="checkbox" name="wpuf_profile_mail_noti" value="true" <?php echo $checked; ?> style="margin-left: 20px;"></td>
             </tr>
         </table>
-		<?php
+    <?php
     }
 
     public function send_invoice( $pdf_file, $inv_u_email ) {
-        if ( ! file_exists( $pdf_file ) ) {
+
+        if ( !file_exists( $pdf_file ) ) {
             return false;
         }
 
@@ -282,19 +255,19 @@ class WPUF_Pro_Invoice {
         $subj       = wpuf_get_option( 'set_mail_sub', 'wpuf_payment_invoices' );
         $text_body  = wpuf_get_option( 'set_mail_body', 'wpuf_payment_invoices' );
 
-        if ( $subj === '' ) {
+        if ( $subj == '' ) {
             $subj = 'Invoice for your payment';
         }
 
-        if ( $text_body === '' ) {
-            $text_body = "Dear Subscriber,\r\nPlease, check attachment for the invoice of your transaction.";
+        if ( $text_body == '' ) {
+            $text_body  = "Dear Subscriber,\r\nPlease, check attachment for the invoice of your transaction.";
         }
 
         $eol        = '';
-        $headers    = 'MIME-Version: 1.0' . $eol;
+        $headers    = "MIME-Version: 1.0". $eol;
         $attach     = $pdf_file;
 
-        $mail_body = get_formatted_mail_body( $text_body, $subj );
+        $mail_body  = get_formatted_mail_body( $text_body, $subj );
 
         wp_mail( $to, $subj, $mail_body, $headers, $attach );
 

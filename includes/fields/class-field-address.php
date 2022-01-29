@@ -6,8 +6,8 @@
  **/
 class WPUF_Form_Field_Address extends WPUF_Field_Contract {
 
-    public function __construct() {
-        $this->name       = __( 'Address Field', 'wpuf-pro' );
+    function __construct() {
+        $this->name       = __( 'Address Field', 'wpuf-pro');
         $this->input_type = 'address_field';
         $this->icon       = 'address-card-o';
     }
@@ -26,12 +26,14 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
      * @return void
      */
     public function render( $field_settings, $form_id, $type = 'post', $post_id = null ) {
-        $value               = '';
-        $address_fields_meta = array();
-
-        if ( isset( $post_id ) && $post_id !== '0' && $this->is_meta( $field_settings ) ) {
-            $value               = $this->get_meta( $post_id, $field_settings['name'], $type );
-            $address_fields_meta = is_array( $value ) ? $value : array();
+        if ( isset( $post_id ) &&  $post_id != '0' ) {
+            if ( $this->is_meta( $field_settings ) ) {
+                $value               = $this->get_meta( $post_id, $field_settings['name'], $type );
+                $address_fields_meta = isset( $value ) ? $value : array();
+            }
+        } else {
+            $value               = '';
+            $address_fields_meta = array();
         }
 
         $country_select_hide_list = isset( $field_settings['address']['country_select']['country_select_hide_list'] ) ? $field_settings['address']['country_select']['country_select_hide_list'] : array();
@@ -41,69 +43,68 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
 
         ?>
 
-        <div class="wpuf-fields <?php echo ' wpuf_' . $field_settings['name'] . '_' . $form_id; ?>">
-            <?php
-            foreach ( $field_settings['address'] as $each_field => $field_array ) {
+        <div class="wpuf-fields <?php echo ' wpuf_'.$field_settings['name'].'_'.$form_id; ?>">
+            <?php foreach( $field_settings['address'] as $each_field => $field_array ) {
                 switch ( $each_field ) {
                     case 'street_address':
                         $autocomplete = 'street-address address-line1';
-                        break;
+                    break;
 
                     case 'street_address2':
                         $autocomplete = 'street-address address-line2';
-                        break;
+                    break;
 
                     case 'city_name':
                         $autocomplete = 'street-address address-level2';
-                        break;
+                    break;
 
                     case 'state':
                         $autocomplete = 'street-address address-level1';
-                        break;
+                    break;
 
                     case 'zip':
                         $autocomplete = 'postal-code';
-                        break;
+                    break;
 
                     case 'country_select':
                         $autocomplete = 'country country-name';
-                        break;
+                    break;
 
                     default:
                         $autocomplete = $each_field;
-                        break;
-                }
-                ?>
+                    break;
+                } ?>
 
                 <div class="wpuf-address-field <?php echo $each_field; ?>">
-                    <?php if ( isset( $field_array['checked'] ) && ! empty( $field_array['checked'] ) ) { ?>
+                    <?php if ( isset( $field_array['checked'] ) && !empty( $field_array['checked'] ) ) { ?>
 
                         <div class="wpuf-sub-fields">
-                            <?php if ( in_array( $field_array['type'], array( 'text', 'hidden', 'email', 'password' ), true ) ) { ?>
+                            <?php if ( in_array( $field_array['type'], array( 'text', 'hidden', 'email', 'password') ) ) { ?>
                                 <input
                                 type="<?php echo $field_array['type']; ?>"
-                                name="<?php echo $field_settings['name'] . '[' . $each_field . ']'; ?>"
-                                value="<?php echo isset( $address_fields_meta[ $each_field ] ) ? esc_attr( $address_fields_meta[ $each_field ] ) : $field_array['value']; ?>"
-                                placeholder="<?php echo $field_array['placeholder']; ?>"
+                                name="<?php  echo $field_settings['name'] . '[' . $each_field . ']'; ?>"
+                                value="<?php echo isset( $address_fields_meta[$each_field] )? esc_attr($address_fields_meta[$each_field]):$field_array['value']; ?>"
+                                placeholder="<?php echo $field_array['placeholder']?>"
                                 class="textfield"
                                 size="40"
-                                autocomplete='<?php echo $autocomplete; ?>' <?php echo isset( $field_array['required'] ) && ! empty( $field_array['required'] ) ? 'required' : ''; ?> />
+                                autocomplete='<?php echo $autocomplete; ?>' <?php echo isset( $field_array['required'] ) && !empty( $field_array['required'] ) ? 'required' : ''; ?> />
 
-								<?php
-                            } elseif ( $each_field === 'country_select' ) {
-                                echo '<' . $field_array['type'] . ' name="' . $field_settings['name'] . '[' . $each_field . ']' . '" autocomplete="' . $autocomplete . '" ' . ( isset( $field_array['required'] ) && ! empty( $field_array['required'] ) ? 'required' : '' ) . '>';
-                                echo '</' . $field_array['type'] . '>';
+                            <?php } elseif ( in_array($field_array['type'],array('textarea','select') ) ) {
 
-                                    $address_fields_meta['country_select'] = isset( $address_fields_meta['country_select'] ) ? $address_fields_meta['country_select'] : $field_array['value'];
-								?>
+                                echo '<'.$field_array['type'].' name="'. $field_settings['name'] . '[' . $each_field . ']' . '" autocomplete="' . $autocomplete . '" '.( isset( $field_array['required'] ) && !empty( $field_array['required'] ) ? 'required' : '').'>';
+                                echo '</'.$field_array['type'].'>';
+
+                                if ( $each_field == 'country_select' ) {
+                                    $address_fields_meta['country_select'] = isset($address_fields_meta['country_select']) ? $address_fields_meta['country_select']:$field_array['value'];
+                                    ?>
                                     <script>
-                                        var field_name             = '<?php echo $field_settings['name'] . '[' . $each_field . ']'; ?>';
+                                        var field_name             = '<?php echo $field_settings['name'] . '[' . $each_field . ']' ; ?>';
                                         var countries              = <?php echo wpuf_get_countries( 'json' ); ?>;
-                                        var banned_countries       = JSON.parse('<?php echo json_encode( $country_select_hide_list ); ?>');
+                                        var banned_countries       = JSON.parse('<?php echo json_encode( $country_select_hide_list ) ?>');
                                         var allowed_countries      = JSON.parse('<?php echo json_encode( $country_select_show_list ); ?>');
                                         var list_visibility_option = '<?php echo $list_visibility_option; ?>';
-                                        var option_string          = '<option value=""><?php esc_html_e( 'Select Country', 'wpuf-pro' ); ?></option>';
-                                        var sel_country            = '<?php echo isset( $address_fields_meta['country_select'] ) ? $address_fields_meta['country_select'] : ''; ?>';
+                                        var option_string          = '<option value=""><?php _e( "Select Country", "wpuf-pro" ); ?></option>';
+                                        var sel_country            = '<?php echo isset($address_fields_meta['country_select'])?$address_fields_meta['country_select']:''; ?>';
 
                                         if ( list_visibility_option == 'hide' ) {
                                             for (country in countries){
@@ -126,47 +127,13 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
 
                                         jQuery('select[name="'+ field_name +'"]').html(option_string);
                                     </script>
-                                <?php
-                            } elseif ( 'state' === $each_field ) {
-                                echo '<' . $field_array['type'] . ' name="' . $field_settings['name'] . '[' . $each_field . ']' . '" autocomplete="' . $autocomplete . '" ' . ( isset( $field_array['required'] ) && ! empty( $field_array['required'] ) ? 'required' : '' ) . '>';
-                                    echo '<option value="">Select State</option>';
-                                echo '</' . $field_array['type'] . '>';
-
-                                $states = include WPUF_PRO_INCLUDES . '/states.php';
-                                ?>
-                                  
-                                <script>
-                                    (function( $ ) {
-                                        var states = JSON.parse('<?php echo json_encode( $states, JSON_HEX_APOS ); ?>');
-                                        var country_field = $('.country_select').find('select');
-                                        setStateOptions( country_field.val() )
-
-                                        country_field.on('change', function(e) {
-                                            var country_code = $(this).val()
-                                            setStateOptions( country_code )
-                                        })
-
-                                        function setStateOptions( country_code ) {
-                                            var state_option = '<option value=""><?php esc_html_e( 'Select State', 'wpuf-pro' ); ?></option>';
-                                            var select_state = '<?php echo isset( $address_fields_meta['state'] ) ? $address_fields_meta['state'] : ''; ?>';
-                                            var field_name   = '<?php echo $field_settings['name'] . '[' . $each_field . ']'; ?>';
-                                           
-                                            for ( state in states[country_code] ) {
-                                                state_option = state_option + '<option value="'+ state +'" ' + ( select_state == state ? 'selected':'' ) + ' >'+ states[country_code][state] +'</option>'; 
-                                            }
-
-                                            $('select[name="'+ field_name +'"]').html(state_option);
-                                        }
-                                    })(jQuery)
-                                </script>
-                                <?php
-                            }
-                            ?>
+                                <?php }
+                            } ?>
                         </div>
 
                         <label class="wpuf-form-sub-label">
                             <?php echo $field_array['label']; ?>
-                            <span class="required"><?php echo ( isset( $field_array['required'] ) && ! empty( $field_array['required'] ) ) ? '*' : ''; ?></span>
+                            <span class="required"><?php echo ( isset( $field_array['required'] ) && !empty($field_array['required']) ) ? '*' : ''; ?></span>
                         </label>
                     <?php } ?>
                 </div>
@@ -176,8 +143,7 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
             <div style="clear: both"><?php $this->help_text( $field_settings ); ?></div>
         </div>
 
-        <?php
-        $this->after_field_print_label();
+        <?php $this->after_field_print_label();
     }
 
     /**
@@ -205,7 +171,7 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
                 'section'       => 'advanced',
                 'priority'      => 21,
                 'help_text'     => '',
-            ),
+            )
         );
 
         return array_merge( $default_options, $settings );
@@ -219,7 +185,7 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
     public function get_field_props() {
         $defaults = $this->default_attributes();
 
-        $props = array(
+        $props    = array(
             'input_type'        => 'address',
             'address_desc'  => '',
             'address'       => array(
@@ -229,7 +195,7 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
                     'required'      => 'checked',
                     'label'         => __( 'Address Line 1', 'wpuf-pro' ),
                     'value'         => '',
-                    'placeholder'   => '',
+                    'placeholder'   => ''
                 ),
 
                 'street_address2'   => array(
@@ -238,7 +204,7 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
                     'required'      => '',
                     'label'         => __( 'Address Line 2', 'wpuf-pro' ),
                     'value'         => '',
-                    'placeholder'   => '',
+                    'placeholder'   => ''
                 ),
 
                 'city_name'         => array(
@@ -247,7 +213,16 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
                     'required'      => 'checked',
                     'label'         => __( 'City', 'wpuf-pro' ),
                     'value'         => '',
-                    'placeholder'   => '',
+                    'placeholder'   => ''
+                ),
+
+                'state'             => array(
+                    'checked'       => 'checked',
+                    'type'          => 'text',
+                    'required'      => 'checked',
+                    'label'         => __( 'State', 'wpuf-pro' ),
+                    'value'         => '',
+                    'placeholder'   => ''
                 ),
 
                 'zip'               => array(
@@ -256,7 +231,7 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
                     'required'      => 'checked',
                     'label'         => __( 'Zip Code', 'wpuf-pro' ),
                     'value'         => '',
-                    'placeholder'   => '',
+                    'placeholder'   => ''
                 ),
 
                 'country_select'    => array(
@@ -267,17 +242,8 @@ class WPUF_Form_Field_Address extends WPUF_Field_Contract {
                     'value'                             => '',
                     'country_list_visibility_opt_name'  => 'all',
                     'country_select_hide_list'          => array(),
-                    'country_select_show_list'          => array(),
-                ),
-
-                'state'             => array(
-                    'checked'       => 'checked',
-                    'type'          => 'select',
-                    'required'      => 'checked',
-                    'label'         => __( 'State', 'wpuf-pro' ),
-                    'value'         => '',
-                    'placeholder'   => '',
-                ),
+                    'country_select_show_list'          => array()
+                )
             ),
             'show_in_post'      => 'yes',
             'hide_field_label'  => 'no',

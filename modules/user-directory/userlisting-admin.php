@@ -1,4 +1,7 @@
 <?php
+// if ( !class_exists( 'User_Directory_Settings_API' ) ) {
+//     require_once dirname( __FILE__ ) . '/lib/class.user-directory-settings-api.php';
+// }
 /**
  * Show users all users
  *
@@ -23,7 +26,7 @@ class WPUF_Userlisting_Admin {
         add_filter( 'wpuf_settings_sections', array($this, 'plugin_sections') );
         add_filter( 'wpuf_settings_fields', array($this, 'plugin_options') );
         add_action( 'admin_enqueue_scripts', array($this, 'userlisting_enqueue_scripts') );
-        // add_action( 'wpuf_admin_menu', array($this, 'admin_menu') );
+        add_action( 'wpuf_admin_menu', array($this, 'admin_menu') );
 
         add_action( 'show_user_profile', array( $this, 'add_meta_fields' ), 20 );
         add_action( 'edit_user_profile', array( $this, 'add_meta_fields' ), 20 );
@@ -292,7 +295,53 @@ class WPUF_Userlisting_Admin {
         echo '</div>';
     }
 
-    
+    /**
+     *
+     *
+     */
+    function show_form() {
+
+        $user_meta = $this->meta_fields;
+        $this->user_meta = $user_meta;
+
+        if ( ! $user_meta ) {
+            return;
+        }
+
+        if( !is_array($user_meta['fields']) || !count($user_meta['fields']) > 0 ) return;
+
+        foreach ($user_meta['fields'] as $key => $val) {
+
+            $this->li_wrap_open( $val );
+
+            switch ($val['type']) {
+
+                case 'meta':
+                    $this->print_meta( $key, $val );
+                    break;
+
+                case 'comment':
+                    $this->print_comment( $key, $val );
+                    break;
+
+                case 'section':
+                    $this->print_section( $key, $val );
+                    break;
+
+                case 'post':
+                    $this->print_post( $key, $val );
+                    break;
+                case 'file':
+                    $this->print_file( $key, $val );
+                    break;
+                case 'social':
+                    $this->print_social( $key, $val );
+                    break;
+            }
+
+            $this->li_wrap_close();
+        }
+    }
 
     function li_wrap_open( $value) {
         $label = isset( $value['label'] ) ? $value['label'] : '';
@@ -311,7 +360,12 @@ class WPUF_Userlisting_Admin {
         <?php
     }
 
-    
+    function li_wrap_close() {
+        ?>
+            </div> <!-- .wpuf-form-holder -->
+        </li>
+        <?php
+    }
 
     function print_meta( $key, $val ) {
         $meta_key = isset( $val['meta'] ) ? esc_attr( $val['meta'] ) : '';
@@ -628,9 +682,9 @@ class WPUF_Userlisting_Admin {
     }
 
     function meta_in_table( $key, $value ) {
-        $in_table   = isset( $value['in_table'] ) ? 'yes' : 'no';
-        $search_by  = isset( $value['search_by'] ) ? 'yes' : 'no';
-        $sort_by    = isset( $value['sort_by'] ) ? 'yes' : 'no';
+        $in_table = isset( $value['in_table'] ) ? 'yes' : 'no';
+        $search_by = isset( $value['search_by'] ) ? 'yes' : 'no';
+        $sort_by = isset( $value['sort_by'] ) ? 'yes' : 'no';
         $show_class = ( 'no' == $in_table ) ? ' wpuf-hide' : '';
         ?>
         <div class="wpuf-form-rows">
@@ -668,7 +722,33 @@ class WPUF_Userlisting_Admin {
         return $wp_roles->get_names();
     }
 
-    
+    /**
+     * Select meta data from $_POST
+     *
+     */
+    function get_meta_type( $key ) {
+
+        $type_meta = array();
+        $meta_post = $_POST['wpuf_pf_field'];
+
+        $type_meta['type'] = 'meta';
+        $type_meta['label'] = isset( $meta_post['label'][$key] ) ? $meta_post['label'][$key] : '';
+        $type_meta['meta'] = isset( $meta_post['meta'][$key] ) ? $meta_post['meta'][$key] : '';
+        $type_meta['all_user_role'] = isset( $meta_post['all_user_role'][$key] ) ? $meta_post['all_user_role'][$key] : array();
+        $type_meta['current_user_role'] = isset( $meta_post['current_user_role'][$key] ) ? $meta_post['current_user_role'][$key] : array();
+
+        if ( isset( $meta_post['in_table'][$key] ) ) {
+            $type_meta['in_table'] = 'yes';
+            if ( isset( $meta_post['search_by'][$key] ) ) {
+                $type_meta['search_by'] = 'yes';
+            }
+            if ( isset( $meta_post['sort_by'][$key] ) ) {
+                $type_meta['sort_by'] = 'yes';
+            }
+        }
+
+        return $type_meta;
+    }
 
     /**
      * Select meta data from $_POST

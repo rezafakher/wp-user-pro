@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SMS Notification
  * Description: SMS notification for post
- * Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/sms-notification/
+ * Plugin URI: https://wedevs.com/products/plugins/wp-user-frontend-pro/sms-notification/
  * Thumbnail Name: wpuf-sms.png
  * Author: weDevs
  * Author URI: http://wedevs.com/

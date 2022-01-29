@@ -26,7 +26,7 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'default'         => '',
                 'size'            => 40,
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'      => 'text',
@@ -41,7 +41,7 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'default'         => '',
                 'size'            => 40,
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'      => 'email',
@@ -56,7 +56,7 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'default'         => '',
                 'size'            => 40,
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'       => 'text',
@@ -73,7 +73,7 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'size'             => 40,
                 'word_restriction' => '',
                 'wpuf_cond'        => $this->conditionals,
-                'wpuf_visibility'  => $this->get_default_visibility_prop(),
+                'wpuf_visibility'  => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'       => 'text',
@@ -90,14 +90,14 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'size'             => 40,
                 'word_restriction' => '',
                 'wpuf_cond'        => $this->conditionals,
-                'wpuf_visibility'  => $this->get_default_visibility_prop(),
+                'wpuf_visibility'  => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'      => 'image_upload',
                 'template'        => 'image_upload',
                 'required'        => 'no',
                 'label'           => 'Profile Picture',
-                'button_label'    => __( 'Select Image', 'wpuf-pro' ),
+                'button_label'    => __( 'Select Image', 'wp-user-frontend' ),
                 'name'            => 'dokan_profile_picture',
                 'is_meta'         => 'yes',
                 'help'            => 'Upload profile picture',
@@ -106,14 +106,14 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'max_size'        => '1024',
                 'count'           => '1',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'      => 'image_upload',
                 'template'        => 'image_upload',
                 'required'        => 'no',
                 'label'           => 'Upload Banner',
-                'button_label'    => __( 'Select Image', 'wpuf-pro' ),
+                'button_label'    => __( 'Select Image', 'wp-user-frontend' ),
                 'name'            => 'dokan_banner',
                 'is_meta'         => 'yes',
                 'help'            => 'Upload a banner for your store. Banner size is (625x300) px',
@@ -122,7 +122,7 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'max_size'        => '2048',
                 'count'           => '1',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'      => 'numeric_text',
@@ -141,73 +141,73 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'min_value_field' => '0',
                 'max_value_field' => '0',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
             array(
-                'input_type'   => 'address',
-                'template'     => 'address_field',
-                'required'     => 'no',
-                'label'        => 'Address',
-                'name'         => 'dokan_address',
-                'is_meta'      => 'yes',
-                'help'         => '',
-                'width'        => '',
-                'css'          => '',
-                'wpuf_cond'    => $this->conditionals,
+                'input_type' => 'address',
+                'template' => 'address_field',
+                'required' => 'no',
+                'label' => 'Address',
+                'name' => 'dokan_address',
+                'is_meta' => 'yes',
+                'help' => '',
+                'width' => '',
+                'css' => '',
+                'wpuf_cond' => $this->conditionals,
                 'address_desc' => '',
-                'address'      => array(
+                'address' => array(
                     'street_1' => array(
-                        'checked'     => 'checked',
-                        'type'        => 'text',
-                        'required'    => 'checked',
-                        'label'       => 'Street',
-                        'value'       => '',
+                        'checked' => 'checked',
+                        'type' => 'text',
+                        'required' => 'checked',
+                        'label' => 'Street',
+                        'value' => '',
                         'placeholder' => '',
-                    ),
+                    ) ,
                     'street_2' => array(
-                        'checked'     => 'checked',
-                        'type'        => 'text',
-                        'required'    => '',
-                        'label'       => 'Street 2',
-                        'value'       => '',
+                        'checked' => 'checked',
+                        'type' => 'text',
+                        'required' => '',
+                        'label' => 'Street 2',
+                        'value' => '',
                         'placeholder' => '',
-                    ),
+                    ) ,
                     'city' => array(
-                        'checked'     => 'checked',
-                        'type'        => 'text',
-                        'required'    => 'checked',
-                        'label'       => 'City',
-                        'value'       => '',
+                        'checked' => 'checked',
+                        'type' => 'text',
+                        'required' => 'checked',
+                        'label' => 'City',
+                        'value' => '',
                         'placeholder' => '',
-                    ),
-                    'zip' => array(
-                        'checked'     => 'checked',
-                        'type'        => 'text',
-                        'required'    => 'checked',
-                        'label'       => 'Zip Code',
-                        'value'       => '',
-                        'placeholder' => '',
-                    ),
-                    'country_select' => array(
-                        'checked'                          => 'checked',
-                        'type'                             => 'select',
-                        'required'                         => 'checked',
-                        'label'                            => 'Country',
-                        'value'                            => '',
-                        'country_list_visibility_opt_name' => 'all',
-                        'country_select_hide_list'         => array(),
-                        'country_select_show_list'         => array(),
-                    ),
+                    ) ,
                     'state' => array(
-                        'checked'     => 'checked',
-                        'type'        => 'select',
-                        'required'    => 'checked',
-                        'label'       => 'State',
-                        'value'       => '',
+                        'checked' => 'checked',
+                        'type' => 'text',
+                        'required' => 'checked',
+                        'label' => 'State',
+                        'value' => '',
                         'placeholder' => '',
-                    ),
+                    ) ,
+                    'zip' => array(
+                        'checked' => 'checked',
+                        'type' => 'text',
+                        'required' => 'checked',
+                        'label' => 'Zip Code',
+                        'value' => '',
+                        'placeholder' => '',
+                    ) ,
+                    'country_select' => array(
+                        'checked' => 'checked',
+                        'type' => 'select',
+                        'required' => 'checked',
+                        'label' => 'Country',
+                        'value' => '',
+                        'country_list_visibility_opt_name' => 'all',
+                        'country_select_hide_list' => array() ,
+                        'country_select_show_list' => array() ,
+                    ) ,
                 ),
-                'wpuf_visibility'   => $this->get_default_visibility_prop(),
+                'wpuf_visibility'   => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'      => 'map',
@@ -224,7 +224,7 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 'show_lat'        => 'no',
                 'width'           => '',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
             array(
                 'input_type'      => 'password',
@@ -243,11 +243,11 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
                 're_pass_label'   => 'Confirm Password',
                 'pass_strength'   => 'yes',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop(),
+                'wpuf_visibility' => $this->get_default_visibility_prop()
             ),
         );
 
-        $this->form_settings = array(
+        $this->form_settings = array (
             'user_notification'          => 'on',
             'admin_notification'         => 'on',
             'notification_type'          => 'welcome_email',
@@ -257,11 +257,11 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
             'label_position'             => 'above',
             'reg_redirect_to'            => 'url',
             'message'                    => 'Registration successful',
-            'registration_url'           => get_site_url() . '/?page=dokan-seller-setup',
+            'registration_url'           =>  get_site_url() . '/?page=dokan-seller-setup',
             'submit_text'                => 'Register',
             'profile_redirect_to'        => 'url',
             'update_message'             => 'Profile has been updated successfully.',
-            'profile_url'                => get_site_url() . '/?page=dokan-seller-setup',
+            'profile_url'                =>  get_site_url() . '/?page=dokan-seller-setup',
             'update_text'                => 'Update Information',
         );
     }
@@ -303,27 +303,28 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
      */
     public function handle_form_updates( $user_id, $form_id, $form_settings ) {
         $store_settings = dokan_get_store_info( $user_id );
-        $shopurl        = isset( $_POST['shopurl'] ) ? sanitize_text_field( wp_unslash( $_POST['shopurl'] ) ) : '';
+        $shopurl        = sanitize_text_field( $_POST['shopurl'] );
 
         //update store setttings info
         $store_settings = array(
-            'store_name'      => isset( $_POST['dokan_store_name'] ) ? sanitize_text_field( wp_unslash( $_POST['dokan_store_name'] ) ) : '',
-            'phone'           => isset( $_POST['dokan_store_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['dokan_store_phone'] ) ) : '',
-            'banner'          => isset( $_POST['wpuf_files']['dokan_banner'] ) ? absint( wp_unslash( $_POST['wpuf_files']['dokan_banner'][0] ) ) : '',
-            'gravatar'        => isset( $_POST['wpuf_files']['dokan_profile_picture'] ) ? absint( wp_unslash( $_POST['wpuf_files']['dokan_profile_picture'][0] ) ) : '',
-            'location'        => isset( $_POST['location'] ) ? sanitize_text_field( wp_unslash( $_POST['location'] ) ) : '',
-            'find_address'    => isset( $_POST['find_address'] ) ? sanitize_text_field( wp_unslash( $_POST['find_address'] ) ) : '',
-            'address'         => isset( $_POST['dokan_address'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['dokan_address'] ) )  : '',
+            'store_name'      => isset( $_POST['dokan_store_name'] ) ? sanitize_text_field( $_POST['dokan_store_name'] ) : '',
+            'phone'           => isset( $_POST['dokan_store_phone'] ) ? sanitize_text_field( $_POST['dokan_store_phone'] ) : '',
+            'banner'          => isset( $_POST['wpuf_files']['dokan_banner'] ) ? absint( $_POST['wpuf_files']['dokan_banner'][0] ) : '',
+            'gravatar'        => isset( $_POST['wpuf_files']['dokan_profile_picture'] ) ? absint( $_POST['wpuf_files']['dokan_profile_picture'][0] ) : '',
+            'location'        => isset( $_POST['location'] ) ? sanitize_text_field( $_POST['location'] ) : '',
+            'find_address'    => isset( $_POST['find_address'] ) ? sanitize_text_field( $_POST['find_address'] ) : '',
+            'address'         => isset( $_POST['dokan_address'] ) ? $_POST['dokan_address'] : '',
         );
 
+
         // set store location data according to dokan vendor location field
-        $store_settings['location'] = explode( '||', $store_settings['location'] );
+        $store_settings['location'] = explode( "||", $store_settings['location'] );
         array_shift( $store_settings['location'] );
 
         update_user_meta( $user_id, 'dokan_geo_latitude', $store_settings['location'][0] );
         update_user_meta( $user_id, 'dokan_geo_longitude', $store_settings['location'][1] );
 
-        $store_settings['location'] = implode( ',', $store_settings['location'] );
+        $store_settings['location'] = implode( ",", $store_settings['location'] );
         $store_settings['address']['country'] = $store_settings['address']['country_select'];
 
         // insert data to seller profile
@@ -336,12 +337,10 @@ class Dokan_Vendor_Reg_Template extends WPUF_Post_Form_Template {
             update_user_meta( $user_id, 'dokan_enable_selling', 'yes' );
         }
 
-        wp_update_user(
-            array(
-				'ID'            => $user_id,
-				'user_nicename' => $shopurl,
-            )
-        );
+        wp_update_user( array(
+            'ID'            => $user_id,
+            'user_nicename' => $shopurl
+        ));
     }
 
 }

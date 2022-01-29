@@ -6,7 +6,7 @@
  **/
 class WPUF_Form_Field_Hook extends WPUF_Field_Contract {
 
-    public function __construct() {
+    function __construct() {
         $this->name       = __( 'Action Hook', 'wpuf-pro' );
         $this->input_type = 'action_hook';
         $this->icon       = 'anchor';
@@ -26,7 +26,7 @@ class WPUF_Form_Field_Hook extends WPUF_Field_Contract {
      * @return void
      */
     public function render( $field_settings, $form_id, $type = 'post', $post_id = null ) {
-        if ( ! empty( $field_settings['label'] ) ) {
+        if ( !empty( $field_settings['label'] ) ) {
             do_action( $field_settings['label'], $form_id, $post_id, $field_settings );
         }
     }
@@ -67,7 +67,7 @@ class WPUF_Form_Field_Hook extends WPUF_Field_Contract {
                                    . 'function your_function_name( $form_id, $post_id, $form_settings ) {<br>'
                                    . '    // do what ever you want<br>'
                                    . '}</pre>',
-            ),
+            )
         );
 
         return $settings;
@@ -85,7 +85,8 @@ class WPUF_Form_Field_Hook extends WPUF_Field_Contract {
             'label'             => 'YOUR_CUSTOM_HOOK_NAME',
             'id'                => 0,
             'is_new'            => true,
-            'is_meta'           => 'yes',
+            'is_meta'           => "yes",
+            'wpuf_cond'         => null
         );
 
         return $props;

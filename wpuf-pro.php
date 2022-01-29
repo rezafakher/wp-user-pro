@@ -4,7 +4,7 @@ Plugin Name: WP User Frontend Pro - business
 Plugin URI: https://wedevs.com/wp-user-frontend-pro/
 Description: The paid module to add extra features on WP User Frontend.
 Author: weDevs
-Version: 3.4.8
+Version: 3.2.0
 Author URI: https://wedevs.com
 License: GPL2
 TextDomain: wpuf-pro
@@ -31,9 +31,8 @@ class WP_User_Frontend_Pro {
                 return;
             }
 
-            add_action( 'admin_notices', [ $this, 'wpuf_activation_notice' ] );
-            add_action( 'wp_ajax_wpuf_pro_install_wp_user_frontend', [ $this, 'install_wp_user_frontend' ] );
-
+            add_action( 'admin_notices', array( $this, 'wpuf_activation_notice' ) );
+            add_action( 'wp_ajax_wpuf_pro_install_wp_user_frontend', array( $this, 'install_wp_user_frontend' ) );
             return;
         }
 
@@ -48,6 +47,7 @@ class WP_User_Frontend_Pro {
 
         // Initialize the action hooks
         $this->init_actions();
+
     }
 
     /**
@@ -76,12 +76,12 @@ class WP_User_Frontend_Pro {
     }
 
     /**
-     * Maybe Activate modules
-     *
-     * @since 1.0.0
-     *
-     * @return void
-     **/
+    * Maybe Activate modules
+    *
+    * @since 1.0.0
+    *
+    * @return void
+    **/
     public function maybe_activate_modules() {
         global $wpdb;
 
@@ -98,45 +98,40 @@ class WP_User_Frontend_Pro {
         $modules = wpuf_pro_get_modules();
 
         if ( $modules ) {
-            foreach ( $modules as $module_file => $data ) {
+            foreach ($modules as $module_file => $data) {
                 wpuf_pro_activate_module( $module_file );
             }
         }
     }
 
     /**
-     * Show WordPress error notice if WP User Frontend not found
+     * Show wordpress error notice if WP User Frontend not found
      *
      * @since 2.4.2
      */
     public function wpuf_activation_notice() {
         ?>
         <div class="updated" id="wpuf-pro-installer-notice" style="padding: 1em; position: relative;">
-            <h2><?php esc_html_e( 'Your WP User Frontend Pro is almost ready!', 'wpuf-pro' ); ?></h2>
+            <h2><?php _e( 'Your WP User Frontend Pro is almost ready!', 'wpuf-pro' ); ?></h2>
 
             <?php
-            $plugin_file      = basename( __DIR__ ) . '/wpuf-pro.php';
-            $core_plugin_file = 'wp-user-frontend/wpuf.php';
+                $plugin_file      = basename( dirname( __FILE__ ) ) . '/wpuf-pro.php';
+                $core_plugin_file = 'wp-user-frontend/wpuf.php';
             ?>
-            <a href="<?php echo wp_nonce_url( 'plugins.php?action=deactivate&amp;plugin=' . $plugin_file . '&amp;plugin_status=all&amp;paged=1&amp;s=', 'deactivate-plugin_' . $plugin_file ); ?>" class="notice-dismiss" style="text-decoration: none;" title="<?php esc_attr_e( 'Dismiss this notice', 'wpuf-pro' ); ?>"></a>
+            <a href="<?php echo wp_nonce_url( 'plugins.php?action=deactivate&amp;plugin=' . $plugin_file . '&amp;plugin_status=all&amp;paged=1&amp;s=', 'deactivate-plugin_' . $plugin_file ); ?>" class="notice-dismiss" style="text-decoration: none;" title="<?php _e( 'Dismiss this notice', 'wpuf-pro' ); ?>"></a>
 
-            <?php if ( file_exists( WP_PLUGIN_DIR . '/' . $core_plugin_file ) && is_plugin_inactive( 'wpuf-user-frontend' ) ) { ?>
-                <p><?php esc_html_e( 'You just need to activate the Core Plugin to make it functional.', 'wpuf-pro' ); ?></p>
+            <?php if ( file_exists( WP_PLUGIN_DIR . '/' . $core_plugin_file ) && is_plugin_inactive( 'wpuf-user-frontend' ) ): ?>
+                <p><?php _e( 'You just need to activate the Core Plugin to make it functional.', 'wpuf-pro' ); ?></p>
                 <p>
-                    <a class="button button-primary" href="<?php echo wp_nonce_url( 'plugins.php?action=activate&amp;plugin=' . $core_plugin_file . '&amp;plugin_status=all&amp;paged=1&amp;s=', 'activate-plugin_' . $core_plugin_file ); ?>"  title="<?php esc_attr_e( 'Activate this plugin', 'wpuf-pro' ); ?>"><?php esc_html_e( 'Activate', 'wpuf-pro' ); ?></a>
+                    <a class="button button-primary" href="<?php echo wp_nonce_url( 'plugins.php?action=activate&amp;plugin=' . $core_plugin_file . '&amp;plugin_status=all&amp;paged=1&amp;s=', 'activate-plugin_' . $core_plugin_file ); ?>"  title="<?php _e( 'Activate this plugin', 'wpuf-pro' ); ?>"><?php _e( 'Activate', 'wpuf-pro' ); ?></a>
                 </p>
-            <?php } else { ?>
-                <p>
-                    <?php
-                    /* translators: 1: opening anchor tag, 2: closing anchor tag. */
-                    echo sprintf( __( 'You just need to install the %1$sCore Plugin%2$s to make it functional.', 'wpuf-pro' ), '<a target="_blank" href="https://wordpress.org/plugins/wp-user-frontend/">', '</a>' );
-                    ?>
-                </p>
+            <?php else: ?>
+                <p><?php echo sprintf( __( "You just need to install the %sCore Plugin%s to make it functional.", "wpuf-pro" ), '<a target="_blank" href="https://wordpress.org/plugins/wp-user-frontend/">', '</a>' ); ?></p>
 
                 <p>
-                    <button id="wpuf-pro-installer" class="button"><?php esc_html_e( 'Install Now', 'wpuf-pro' ); ?></button>
+                    <button id="wpuf-pro-installer" class="button"><?php _e( 'Install Now', 'wpuf-pro' ); ?></button>
                 </p>
-            <?php } ?>
+            <?php endif; ?>
 
         </div>
 
@@ -153,7 +148,7 @@ class WP_User_Frontend_Pro {
 
                     var data = {
                         action: 'wpuf_pro_install_wp_user_frontend',
-                        _wpnonce: '<?php echo wp_create_nonce( 'wpuf-pro-installer-nonce' ); ?>'
+                        _wpnonce: '<?php echo wp_create_nonce('wpuf-pro-installer-nonce'); ?>'
                     };
 
                     $.post(ajaxurl, data, function (response) {
@@ -179,22 +174,19 @@ class WP_User_Frontend_Pro {
      * @return json
      */
     public function install_wp_user_frontend() {
-        check_ajax_referer( 'wpuf-pro-installer-nonce' );
+
+        if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'wpuf-pro-installer-nonce' ) ) {
+            wp_send_json_error( __( 'Error: Nonce verification failed', 'wpuf-pro' ) );
+        }
 
         include_once ABSPATH . 'wp-admin/includes/plugin-install.php';
         include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
         $plugin = 'wp-user-frontend';
-        $api    = plugins_api(
-            'plugin_information', [
-                'slug'   => $plugin,
-                'fields' => [ 'sections' => false ],
-            ]
-        );
+        $api    = plugins_api( 'plugin_information', array( 'slug' => $plugin, 'fields' => array( 'sections' => false ) ) );
 
         $upgrader = new Plugin_Upgrader( new WP_Ajax_Upgrader_Skin() );
         $result   = $upgrader->install( $api->download_link );
-
         if ( is_wp_error( $result ) ) {
             wp_send_json_error( $result );
         }
@@ -214,9 +206,9 @@ class WP_User_Frontend_Pro {
      * @return void
      */
     private function define_constants() {
-        define( 'WPUF_PRO_VERSION', '3.4.8' );
+        define( 'WPUF_PRO_VERSION', '3.2.0' );
         define( 'WPUF_PRO_FILE', __FILE__ );
-        define( 'WPUF_PRO_ROOT', __DIR__ );
+        define( 'WPUF_PRO_ROOT', dirname( __FILE__ ) );
         define( 'WPUF_PRO_INCLUDES', WPUF_PRO_ROOT . '/includes' );
         define( 'WPUF_PRO_MODULES', WPUF_PRO_ROOT . '/modules' );
         define( 'WPUF_PRO_ROOT_URI', plugins_url( '', __FILE__ ) );
@@ -229,7 +221,6 @@ class WP_User_Frontend_Pro {
      * @return void
      */
     public function includes() {
-        require_once WPUF_PRO_INCLUDES . '/functions.php';
         require_once WPUF_ROOT . '/class/render-form.php';
         require_once WPUF_PRO_INCLUDES . '/frontend-form-profile.php';
         require_once WPUF_PRO_INCLUDES . '/updates.php';
@@ -249,8 +240,6 @@ class WP_User_Frontend_Pro {
             require_once WPUF_PRO_ROOT . '/admin/profile-forms-list-table.php';
 
             require_once WPUF_PRO_ROOT . '/includes/class-whats-new.php';
-            require_once WPUF_PRO_ROOT . '/includes/class-contacts.php';
-            require_once WPUF_PRO_ROOT . '/admin/blocks/partial-content-restriction/block.php';
         }
 
         require_once WPUF_ROOT . '/admin/template.php';
@@ -260,6 +249,7 @@ class WP_User_Frontend_Pro {
 
         //class files to include pro elements
         require_once WPUF_PRO_INCLUDES . '/class-fields-manager.php';
+
 
         require_once WPUF_PRO_INCLUDES . '/class-invoice.php';
         require_once WPUF_PRO_INCLUDES . '/class-invoice-frontend.php';
@@ -281,8 +271,6 @@ class WP_User_Frontend_Pro {
         require_once WPUF_PRO_INCLUDES . '/class-frontend-account.php';
         require_once WPUF_PRO_INCLUDES . '/class-content-filter.php';
         require_once WPUF_PRO_INCLUDES . '/class-events-plugins-integration.php';
-        require_once WPUF_PRO_INCLUDES . '/class-partial-content-restriction.php';
-        require_once WPUF_PRO_INCLUDES . '/class-post-status-change.php';
 
         if ( ! function_exists( 'wpuf_pro_get_active_modules' ) ) {
             require_once WPUF_PRO_INCLUDES . '/modules.php';
@@ -292,7 +280,7 @@ class WP_User_Frontend_Pro {
         $modules = wpuf_pro_get_active_modules();
 
         if ( $modules ) {
-            foreach ( $modules as $module_file ) {
+            foreach ($modules as $module_file) {
                 $module_path = WPUF_PRO_MODULES . '/' . $module_file;
 
                 if ( file_exists( $module_path ) ) {
@@ -307,7 +295,8 @@ class WP_User_Frontend_Pro {
      *
      * @return void
      */
-    public function instantiate() {
+    public function instantiate(){
+
         new WPUF_Menu_Restriction();
         new WPUF_Frontend_Form_Profile();
         new WPUF_Admin_Profile_Form_Template();
@@ -324,8 +313,7 @@ class WP_User_Frontend_Pro {
         new WPUF_Events_Plugins_Integration();
 
         new WPUF_Pro_Fields_Manager();
-        new WPUF_Partial_Content_Restriction();
-        new WPUF_Post_Status_Notification();
+
 
         if ( is_admin() ) {
             new WPUF_Admin_Form_Pro();
@@ -335,8 +323,6 @@ class WP_User_Frontend_Pro {
             new WPUF_Pro_Modules();
             new WPUF_Pro_Whats_New();
             WPUF_Coupons::init();
-            new WPUF_Block_Partial_Content();
-            new WPUF_Contact();
         }
 
         new WPUF_Updates( $this->plan );
@@ -348,52 +334,40 @@ class WP_User_Frontend_Pro {
      * @return void
      */
     public function init_actions() {
-        add_action( 'init', [ $this, 'load_textdomain' ] );
+        add_action( 'init', array( $this, 'load_textdomain') );
 
         //coupon
-        add_action( 'wpuf_coupon_settings_form', [ $this, 'wpuf_coupon_settings_form_runner' ], 10, 1 );
-        add_action( 'wpuf_check_save_permission', [ $this, 'wpuf_check_save_permission_runner' ], 10, 2 );
+        add_action( 'wpuf_coupon_settings_form', array($this, 'wpuf_coupon_settings_form_runner'),10,1 );
+        add_action( 'wpuf_check_save_permission', array($this, 'wpuf_check_save_permission_runner'),10,2 );
 
         // admin menu
-        add_action( 'wpuf_admin_menu_top', [ $this, 'admin_menu_top' ] );
-        add_action( 'wpuf_admin_menu', [ $this, 'admin_menu' ] );
-        add_action( 'wpuf_admin_menu_bottom', [ $this, 'admin_menu_bottom' ] );
+        add_action( 'wpuf_admin_menu_top', array($this, 'admin_menu_top') );
+        add_action( 'wpuf_admin_menu', array($this, 'admin_menu') );
+        add_action( 'wpuf_admin_menu_bottom', array($this, 'admin_menu_bottom') );
 
         // Pro settings
-        add_filter( 'wpuf_options_others', [ $this, 'wpuf_pro_settings_fields' ] );
+        add_filter( 'wpuf_options_others', array($this, 'wpuf_pro_settings_fields') );
 
         //page install
-        add_filter( 'wpuf_pro_page_install', [ $this, 'install_pro_pages' ], 10, 1 );
+        add_filter( 'wpuf_pro_page_install' , array( $this, 'install_pro_pages' ), 10, 1 );
 
         //show custom html in frontend
-        add_filter( 'wpuf_custom_field_render', [ $this, 'render_custom_fields' ], 99, 4 );
+        add_filter( 'wpuf_custom_field_render', array( $this, 'render_custom_fields' ), 99, 4 );
 
         // post form templates
-        add_action( 'wpuf_get_post_form_templates', [ $this, 'post_form_templates' ] );
+        add_action( 'wpuf_get_post_form_templates', array($this, 'post_form_templates') );
 
-        add_filter( 'wpuf_frontend_js_data', [ $this, 'additional_js_data' ] );
-
-        //post expiration handle for quick edit
-        add_filter( 'manage_post_posts_columns', [ $this, 'add_expire_column' ] );
-        add_action( 'quick_edit_custom_box', [ $this, 'wpuf_post_will_expire' ], 10, 2 );
-        add_action( 'manage_posts_columns', [ $this, 'unset_expire_column' ], 10, 2 );
-        add_action( 'wp_ajax_wpuf_post_will_expire', [ $this, 'wpuf_handle_ajax_expire' ] );
-        //post expiration handle for edit
-        //add_action( 'add_meta_boxes', [ $this, 'wpuf_post_will_expire_or_not' ] );//need to gutenberg compaitable
-        add_action( 'save_post', [ $this, 'wpuf_handle_expire' ] );
-        //Bulk form id for existing post
-        add_action( 'manage_posts_extra_tablenav', [ $this, 'add_form_dropdown' ] );
-        add_action( 'admin_head-edit.php', [ $this, 'assign_bulk_form_id' ] );
+        add_filter( 'wpuf_frontend_js_data', array( $this, 'additional_js_data' ) );
     }
+
 
     /**
      * Load the translation file for current language.
      *
      * @since version 0.7
-     *
      * @author Tareq Hasan
      */
-    public function load_textdomain() {
+    function load_textdomain() {
         load_plugin_textdomain( 'wpuf-pro', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
     }
 
@@ -404,11 +378,11 @@ class WP_User_Frontend_Pro {
      *
      * @return void
      */
-    public function admin_menu_top() {
+    function admin_menu_top() {
         $capability = wpuf_admin_role();
 
-        $profile_forms_page = add_submenu_page( 'wp-user-frontend', __( 'Registration Forms', 'wpuf-pro' ), __( 'Registration Forms', 'wpuf-pro' ), $capability, 'wpuf-profile-forms', [ $this, 'wpuf_profile_forms_page' ] );
-        add_action( "load-$profile_forms_page", [ $this, 'footer_styles' ] );
+        $profile_forms_page = add_submenu_page( 'wp-user-frontend', __( 'Registration Forms', 'wpuf-pro' ), __( 'Registration Forms' ), $capability, 'wpuf-profile-forms', array( $this, 'wpuf_profile_forms_page' ) );
+        add_action( "load-$profile_forms_page", array( $this, 'footer_styles' ) );
     }
 
     /**
@@ -418,8 +392,8 @@ class WP_User_Frontend_Pro {
      *
      * @return void
      */
-    public function admin_menu() {
-        if ( 'on' === wpuf_get_option( 'enable_payment', 'wpuf_payment', 'on' ) ) {
+    function admin_menu() {
+        if ( 'on' == wpuf_get_option( 'enable_payment', 'wpuf_payment', 'on' ) ) {
             $capability = wpuf_admin_role();
             add_submenu_page( 'wp-user-frontend', __( 'Coupons', 'wpuf-pro' ), __( 'Coupons', 'wpuf-pro' ), $capability, 'edit.php?post_type=wpuf_coupon' );
         }
@@ -432,11 +406,11 @@ class WP_User_Frontend_Pro {
      *
      * @return void
      */
-    public function admin_menu_bottom() {
+    function admin_menu_bottom() {
         $capability = wpuf_admin_role();
 
-        $modules = add_submenu_page( 'wp-user-frontend', __( 'Modules', 'wpuf-pro' ), __( 'Modules', 'wpuf-pro' ), $capability, 'wpuf-modules', [ $this, 'modules_page' ] );
-        add_action( $modules, [ $this, 'modules_scripts' ] );
+        $modules = add_submenu_page( 'wp-user-frontend', __( 'Modules', 'wpuf-pro' ), __( 'Modules', '' ), $capability, 'wpuf-modules', array( $this, 'modules_page' ) );
+        add_action( $modules, array( $this, 'modules_scripts' ) );
     }
 
     /**
@@ -446,8 +420,8 @@ class WP_User_Frontend_Pro {
      *
      * @return void
      */
-    public function wpuf_profile_forms_page() {
-        $action           = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : '';
+    function wpuf_profile_forms_page() {
+        $action = isset( $_GET['action'] ) ? $_GET['action'] : null;
         $add_new_page_url = admin_url( 'admin.php?page=wpuf-profile-forms&action=add-new' );
 
         switch ( $action ) {
@@ -465,7 +439,7 @@ class WP_User_Frontend_Pro {
         }
     }
 
-    public function footer_styles() {
+    function footer_styles() {
         echo '<style type="text/css">
             .column-user_role { width:12% !important; overflow:hidden }
         </style>';
@@ -479,7 +453,7 @@ class WP_User_Frontend_Pro {
      * @return void
      **/
     public function modules_page() {
-        include __DIR__ . '/admin/modules.php';
+        include dirname( __FILE__ ) . '/admin/modules.php';
     }
 
     /**
@@ -489,31 +463,30 @@ class WP_User_Frontend_Pro {
      *
      * @return void
      **/
-    public function modules_scripts() {
-        wp_enqueue_style( 'wpuf-pro-modules', WPUF_PRO_ASSET_URI . '/css/wpuf-module.css', false, WPUF_PRO_VERSION );
-        wp_enqueue_script( 'jquery-blockui', WPUF_PRO_ASSET_URI . '/js/jquery.blockUI.min.js', [ 'jquery' ], WPUF_PRO_VERSION, true );
-        wp_enqueue_script( 'wpuf_pro_admin', WPUF_PRO_ASSET_URI . '/js/wpuf-module.js', [ 'jquery', 'jquery-blockui' ], WPUF_PRO_VERSION, true );
+    function modules_scripts() {
+        wp_enqueue_style( 'wpuf-pro-modules', WPUF_PRO_ASSET_URI . '/css/wpuf-module.css' );
+        wp_enqueue_script( 'jquery-blockui', WPUF_PRO_ASSET_URI . '/js/jquery.blockUI.min.js', array( 'jquery' ), null, true );
+        wp_enqueue_script( 'wpuf_pro_admin', WPUF_PRO_ASSET_URI.'/js/wpuf-module.js', array( 'jquery', 'jquery-blockui' ) );
 
-        $wpuf_module = apply_filters(
-            'wpuf_module_localize_param', [
-                'ajaxurl'      => admin_url( 'admin-ajax.php' ),
-                'nonce'        => wp_create_nonce( 'wpuf-admin-nonce' ),
-                'activating'   => __( 'Activating', 'wpuf-pro' ),
-                'deactivating' => __( 'Deactivating', 'wpuf-pro' ),
-            ]
-        );
+        $wpuf_module = apply_filters( 'wpuf_module_localize_param', array(
+            'ajaxurl' => admin_url( 'admin-ajax.php' ),
+            'nonce' => wp_create_nonce( 'wpuf-admin-nonce' ),
+            'activating' => __( 'Activating', 'wpuf-pro' ),
+            'deactivating' => __( 'Deactivating', 'wpuf-pro' )
+        ) );
 
         wp_localize_script( 'wpuf_pro_admin', 'wpuf_module', $wpuf_module );
     }
 
-    public function wpuf_pro_settings_fields( $wpuf_general_fields ) {
-        $pro_settings_fields = [
-            [
+    function wpuf_pro_settings_fields( $wpuf_general_fields ){
+
+        $pro_settings_fields = array(
+            array(
                 'name'  => 'gmap_api_key',
-                'label' => __( 'Google Map API', 'wpuf-pro' ),
-                'desc'  => __( '<a target="_blank" href="https://developers.google.com/maps/documentation/javascript">API</a> key is needed to render Google Maps', 'wpuf-pro' ),
-            ],
-        ];
+                'label' => __( 'Google Map API', 'wpuf' ),
+                'desc'  => __( '<a target="_blank" href="https://developers.google.com/maps/documentation/javascript">API</a> key is needed to render Google Maps', 'wpuf' ),
+            )
+        );
 
         $wpuf_general_settings = array_merge( $wpuf_general_fields, $pro_settings_fields );
 
@@ -530,37 +503,35 @@ class WP_User_Frontend_Pro {
     }
 
     //install pro version page
-    public function install_pro_pages( $profile_options ) {
+    function install_pro_pages( $profile_options ) {
         $wpuf_pro_page_installer = new wpuf_pro_page_installer();
-
         return $wpuf_pro_page_installer->install_pro_version_pages( $profile_options );
     }
 
     /**
-     * Show custom html
+     * show custom html
      */
-    public function render_custom_fields( $html, $value, $attr, $form_settings ) {
-        switch ( $attr['input_type'] ) {
+    function render_custom_fields( $html, $value, $attr, $form_settings ) {
+
+        switch( $attr['input_type']) {
             case 'ratings':
-                $hide_label = isset( $attr['hide_field_label'] ) ? $attr['hide_field_label'] : 'no';
+                $hide_label  = isset( $attr['hide_field_label'] ) ? $attr['hide_field_label'] : 'no';
 
                 $ratings_html = '';
 
-                $ratings_html .= '<select name="' . $attr['name'] . '" class="wpuf-ratings">';
-
-                foreach ( $attr['options'] as $key => $option ) {
-                    $ratings_html .= '<option value="' . $key . '" ' . ( in_array( $key, $value, true ) ? 'selected' : '' ) . '>' . $option . '</option>';
-                }
-
+                $ratings_html .= '<select name="'.$attr['name'].'" class="wpuf-ratings">';
+                    foreach( $attr['options'] as $key => $option ) :
+                        $ratings_html .= '<option value="'.$key.'" ' .( in_array( $key, $value ) ? 'selected' : '' ) . '>' .$option. '</option>';
+                    endforeach;
                 $ratings_html .= '</select>';
 
                 $html .= '<li>';
 
-                if ( $hide_label === 'no' ) {
+                if ( $hide_label == 'no' ) {
                     $html .= '<label>' . $attr['label'] . ': </label> ';
                 }
 
-                $html .= ' ' . $ratings_html . '</li>';
+                $html .= ' '.$ratings_html.'</li>';
 
                 $js = '<script type="text/javascript">';
                     $js .= 'jQuery(function($) {';
@@ -575,7 +546,7 @@ class WP_User_Frontend_Pro {
                 break;
 
             case 'repeat':
-                $multiple = ( isset( $attr['multiple'] ) && $attr['multiple'] === 'true' ) ? true : false;
+                $multiple = ( isset( $attr['multiple'] ) && $attr['multiple'] == 'true' ) ? true : false;
 
                 if ( ! $multiple ) {
                     $value = isset( $value['0'] ) ? $value['0'] : '';
@@ -589,12 +560,13 @@ class WP_User_Frontend_Pro {
         return $html;
     }
 
+
     /**
      * Post form templates
      *
      * @since 2.4
      *
-     * @param array $integrations
+     * @param  array $integrations
      *
      * @return array
      */
@@ -619,268 +591,11 @@ class WP_User_Frontend_Pro {
      *
      * @return array $data
      */
-    public function additional_js_data( $data ) {
-        $data['coupon_error'] = __( 'Please enter a coupon code!', 'wpuf-pro' );
-
+    function additional_js_data( $data ) {
+        $data['coupon_error'] = __('Please enter a coupon code!', 'wpuf-pro');
         return $data;
     }
 
-    /**
-     * Add expire column
-     *
-     * @since 3.4.7
-     *
-     * @param $columns
-     *
-     * @return mixed
-     */
-    public function add_expire_column( $columns ) {
-        $columns['will_expire'] = 'Will Expire';
-
-        return $columns;
-    }
-
-    /**
-     * Add will expire column for quick edit
-     *
-     * @since 3.4.7
-     *
-     * @param $column_name
-     * @param $post_type
-     *
-     * @return void
-     */
-    public function wpuf_post_will_expire( $column_name, $post_type ) {
-        if ( $column_name !== 'will_expire' ) {
-            return;
-        }
-        wp_nonce_field( 'wpuf_post_will_expire', 'wpuf_expire' );
-        ?>
-        <script>
-            ;(function ($) {
-                $('tr[id^="post"]').on('click', function (e) {
-                    if (!e.target.classList.contains('editinline')) {
-                        return;
-                    }
-                    var post_id = $(this).attr('id').replace('post-', '');
-                    var status = $('._status', this).text();
-                    var nonce = $("input[name='wpuf_expire']").val();
-                    var cb = `<label class="alignleft wpuf-expire">
-                            <input type="checkbox" name="will_expire" >
-                            <span class="checkbox-title"><?php esc_attr_e( 'Post Expiry', 'wpuf-pro' ); ?> ?</span>
-                            </label>`
-                    $.ajax({
-                        url: wpuf_admin_script.ajaxurl,
-                        method: 'get',
-                        type: 'json',
-                        data: {
-                            action: 'wpuf_post_will_expire',
-                            post_id: post_id,
-                            expire_nonce: nonce
-                        }
-                    }).done(function (response) {
-                        if (response) {
-                            var expire_meta = response.data.post_expiration;
-                            if (status !== 'publish' && expire_meta === 'yes') {
-                                $(cb).insertAfter($('#edit-' + post_id + ' ' + 'select[name="_status"]').parent().parent());
-                            }
-                        }
-                    });
-                })
-
-                $(document).ready(function () {
-                    setTimeout(function () {
-                        if ($('input[name="will_expire-hide"]').prop('checked') === true) {
-                            $('input[name="will_expire-hide"]').click().prop('checked', false);
-                        }
-                    }, 200)
-                })
-
-            })(jQuery)
-        </script>
-        <?php
-    }
-
-    /**
-     * Unset expire column
-     *
-     * @since 3.4.7
-     *
-     * @param $column
-     * @param $post_type
-     *
-     * @return mixed
-     */
-    public function unset_expire_column( $column, $post_type ) {
-        unset( $column['will_expire'] );
-
-        return $column;
-    }
-
-    /**
-     * Handle quick edit ajax for expire column
-     *
-     * @since 3.4.7
-     *
-     * @return WP_REST_Response
-     */
-    public function wpuf_handle_ajax_expire() {
-        $nonce  = isset( $_REQUEST['expire_nonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['expire_nonce'] ) ) : null;
-        $result = wp_verify_nonce( $nonce, 'wpuf_post_will_expire' );
-
-        if ( ! $result ) {
-            return;
-        }
-
-        $post_id        = isset( $_REQUEST['post_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['post_id'] ) ) : null;
-        $has_expiration = $this->has_expiration( $post_id );
-
-        $res = [
-            'post_expiration' => $has_expiration ? 'yes' : 'no',
-        ];
-
-        wp_send_json_success( $res, 200 );
-    }
-
-    /**
-     * Add meta box for expiration
-     */
-    public function wpuf_post_will_expire_or_not() {
-        global $post;
-        if ( $this->has_expiration( $post->ID ) ) {
-            add_meta_box( 'wpuf_post_will_expire_or_not', __( 'Post Expiry', 'wpuf-pro' ), [ $this, 'wpuf_add_expire_checkbox' ], 'post', 'side', 'high' );
-        }
-    }
-
-    /**
-     * Meta box callback
-     */
-    public function wpuf_add_expire_checkbox() {
-        ?>
-        <label>
-            <input type="checkbox" name="will_expire">
-            <?php __( 'Post Expiry', 'wpuf-pro' ); ?>
-        </label>
-        <?php
-    }
-
-    /**
-     * Has expiration belongs to a post
-     *
-     * @since 3.4.7
-     *
-     * @param $post_id
-     *
-     * @return mixed
-     */
-    public function has_expiration( $post_id ) {
-        return get_post_meta( $post_id, 'wpuf-post_expiration_date' ) && get_post_status( $post_id ) !== 'publish';
-    }
-
-    /**
-     * Handle expire meta
-     *
-     * @since 3.4.7
-     *
-     * @param $post_id
-     */
-    public function wpuf_handle_expire( $post_id ) {
-        if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
-            return;
-        }
-
-        if ( ! current_user_can( 'edit_posts' ) ) {
-            return;
-        }
-
-        $current_status = isset( $_REQUEST['_status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_status'] ) ) : null;
-        $will_expire    = ! isset( $_REQUEST['will_expire'] ) ? 1 : 0;
-
-        if ( ! $will_expire ) {
-            return;
-        }
-
-        if ( $current_status === 'publish' && $current_status !== null ) {
-            delete_post_meta( $post_id, 'wpuf-post_expiration_date' );
-        }
-    }
-
-    /**
-     * Add form list to dropdown
-     *
-     * @param $which
-     *
-     * @since 3.4.7
-     *
-     * @return void
-     */
-    public function add_form_dropdown( $which ) {
-        if ( ! $this->is_valid_post_type() ) {
-            return;
-        }
-
-        $forms = get_posts(
-            [
-                'post_type' => 'wpuf_forms',
-                'post_status' => 'any',
-            ]
-        );
-
-        if ( ! empty( $_GET['post_type'] ) && $which === 'top' ) {
-            ?>
-            <div class="alignleft actions bulkactions">
-                <label for="bulk-action-selector-top" class="screen-reader-text">Select bulk action</label>
-                <select name="wpuf_form_id">
-                    <option value="0">Select Form</option>
-                    <?php foreach ( $forms as $form ) { ?>
-                        <option value="<?php echo $form->ID; ?>"><?php echo $form->post_title; ?></option>
-                    <?php } ?>
-                </select>
-                <?php submit_button( __( 'Add Form', 'wpuf-pro' ), '', 'add_wpuf_form_id', false, array( 'id' => 'post-query-submit' ) ); ?>
-            </div>
-            <?php
-        }
-    }
-
-    /**
-     * Assign bulk form id to post
-     *
-     * @since 3.4.7
-     *
-     * @return void
-     */
-    public function assign_bulk_form_id() {
-        if ( ! $this->is_valid_post_type() ) {
-            return;
-        }
-
-        $form_id = ! empty( $_GET['wpuf_form_id'] ) ? sanitize_text_field( wp_unslash( $_GET['wpuf_form_id'] ) ) : '';
-        //phpcs:ignore
-        $posts   = ! empty( $_GET['post'] ) ? $_GET['post']  : '';
-
-        if ( $posts && ! empty( $_GET['add_wpuf_form_id'] ) && $_GET['add_wpuf_form_id'] === 'Add Form' && $form_id > 0 ) {
-            foreach ( $posts as $post_id ) {
-                update_post_meta( $post_id, '_wpuf_form_id', $form_id );
-            }
-        }
-    }
-
-    /**
-     * Determine if valid post type
-     *
-     * @since 3.4.7
-     *
-     * @return bool
-     */
-    public function is_valid_post_type() {
-        $post_type = ! empty( $_GET['post_type'] ) ? sanitize_text_field( wp_unslash( $_GET['post_type'] ) ) : '';
-
-        if ( in_array( $post_type, wpuf_get_post_types(), true ) ) {
-            return true;
-        }
-
-        return false;
-    }
 }
 
 /**

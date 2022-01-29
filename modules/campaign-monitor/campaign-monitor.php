@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Campaign Monitor
  * Description: Subscribe a contact to Campaign Monitor when a form is submited
- * Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/campaign-monitor/
+ * Plugin URI: https://wedevs.com/wp-user-frontend-pro/
  * Thumbnail Name: campaign_monitor.png
  * Author: weDevs
  * Version: 1.0

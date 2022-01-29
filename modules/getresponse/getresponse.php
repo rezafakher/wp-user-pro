@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GetResponse
  * Description: Subscribe a contact to GetResponse when a form is submited
- * Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/get-response/
+ * Plugin URI: https://wedevs.com/wp-user-frontend-pro/
  * Thumbnail Name: getresponse.png
  * Author: weDevs
  * Version: 1.0
@@ -134,8 +134,8 @@ class WPUF_GetResponse {
         $param = (object) array(
             'name'  => $user->user_nicename,
             'email' => $user->user_email,
-            'campaign'  => array(
-                'campaignId' => $list_selected
+            'campaign'  => array( 
+                'campaignId' => $list_selected 
             ),
         );
 

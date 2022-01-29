@@ -1,7 +1,7 @@
 <?php
 /*
   Plugin Name: Paid Membership Pro Integration
-  Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/install-and-configure-pmpro-add-on-for-wpuf/
+  Plugin URI: http://wedevs.com/
   Thumbnail Name: wpuf-pmpro.png
   Description: Membership Integration of WP User Frontend PRO with Paid Membership Pro
   Version: 0.2
@@ -35,9 +35,8 @@
  * **********************************************************************
  */
 // don't call the file directly
-if ( ! defined( 'ABSPATH' ) ) {
+if ( !defined( 'ABSPATH' ) )
     exit;
-}
 
 /**
  * WPUF_Pm_Pro class
@@ -46,7 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WPUF_Pm_Pro {
 
-    const OPTION_ID = 'wpufpmpro';
+    const option_id = 'wpufpmpro';
 
     /**
      * Constructor for the WPUF_Pm_Pro class
@@ -72,7 +71,7 @@ class WPUF_Pm_Pro {
      */
     public static function init() {
         static $instance = false;
-        if ( ! $instance ) {
+        if ( !$instance ) {
             $instance = new WPUF_Pm_Pro();
         }
         return $instance;
@@ -85,9 +84,9 @@ class WPUF_Pm_Pro {
      * @return array|int
      */
     public function get_option( $level_id = false ) {
-        $option = get_option( self::OPTION_ID, array() );
+        $option = get_option( self::option_id, array() );
         if ( $level_id ) {
-            return isset( $option[ $level_id ] ) ? $option[ $level_id ] : false;
+            return isset( $option[$level_id] ) ? $option[$level_id] : false;
         }
         return $option;
     }
@@ -98,10 +97,10 @@ class WPUF_Pm_Pro {
      * @param int $level_id
      * @param int $post_count
      */
-    public function update_level_count( $level_id, $post_count ) {
+    function update_level_count( $level_id, $post_count ) {
         $option            = $this->get_option();
-        $option[ $level_id ] = $post_count;
-        update_option( self::OPTION_ID, $option );
+        $option[$level_id] = $post_count;
+        update_option( self::option_id, $option );
     }
 
     /**
@@ -110,16 +109,9 @@ class WPUF_Pm_Pro {
      * @uses `pmpro_save_membership_level` action hook
      * @param int $level_id
      */
-    public function post_count_field_save( $level_id ) {
-        $post_count = isset( $_REQUEST['wpuf_post_count'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wpuf_post_count'] ) ) : 0;
-        $pack_id    = isset( $_REQUEST['wpuf_pack_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wpuf_pack_id'] ) ) : 0;
+    function post_count_field_save( $level_id ) {
+        $post_count = isset( $_POST['wpuf_post_count'] ) ? $_POST['wpuf_post_count'] : 0;
         $this->update_level_count( $level_id, $post_count );
-        //remove meta from existing pack
-        $old_pack = $this->wpuf_get_pack_id_by_lvl_id( $level_id );
-        if ( $old_pack !== $pack_id ) {
-            delete_post_meta( $old_pack, 'wpuf_pmpro_lvl_id' );
-        }
-        update_post_meta( $pack_id, 'wpuf_pmpro_lvl_id', $level_id );
     }
 
     /**
@@ -127,42 +119,28 @@ class WPUF_Pm_Pro {
      *
      * @return void
      */
-    public function post_count_field_insert() {
-        $level_id   = isset( $_GET['edit'] ) ? sanitize_key( wp_unslash( $_GET['edit'] ) ) : 0;
-        $level_id   = ( intval( $level_id ) < 0 ) ? 0 : intval( $level_id );
+    function post_count_field_insert() {
+        $level_id   = ( intval( $_GET['edit'] ) < 0 ) ? 0 : intval( $_GET['edit'] );
         $post_count = $level_id ? $this->get_option( $level_id ) : array();
-        $sub        = WPUF_Subscription::init();
-        $post_types = $sub->get_all_post_type();
-        $all_subs   = $sub->get_subscriptions();
-        $pack_id    = $this->wpuf_get_pack_id_by_lvl_id( $level_id );
+        $post_types = WPUF_Subscription::init()->get_all_post_type();
         ?>
-        <h3 class="topborder"><?php esc_html_e( 'WP User Frontend PRO', 'wpuf-pro' ); ?></h3>
+        <h3 class="topborder"><?php _e( 'WP User Frontend PRO', 'wpuf-pro' ); ?></h3>
         <table class="form-table">
             <tbody>
-            <tr>
-                <th scope="row" valign="top"><label><?php esc_html_e( 'Select Sub Pack', 'wpuf-pro' ); ?>:</label></th>
-                <td>
-                    <select name="wpuf_pack_id" id="wpuf_pack">
-                        <option value="" disabled
-                        <?php
-                        if ( $pack_id === 0 ) {
-                            echo 'selected="selected"';}
-                        ?>
-                        ">Select Sub Pack</option>
-                        <?php foreach ( $all_subs as $sub ) { ?>
-                            <option value="<?php echo $sub->ID; ?>"
-                                                      <?php
-                                                        if ( $sub->ID === $pack_id ) {
-                                                            echo 'selected="selected"';}
-                                                        ?>
-                            ><?php echo $sub->post_title; ?></option>
-                        <?php } ?>
-                    </select>
-                    <span class="description">
-                            <strong><?php esc_html_e( 'Must Select One Pack', 'wpuf-pro' ); ?></strong>
-                    </span>
-                </td>
-            </tr>
+        <?php
+        foreach ( $post_types as $key => $value ) {
+            $count = isset( $post_count[$key] ) ? intval( $post_count[$key] ) : 0;
+            ?>
+                    <tr>
+                        <th scope="row" valign="top"><label><?php printf( __( '%s Count', 'wpuf-pro' ), ucfirst( $value ) ); ?>:</label></th>
+                        <td>
+                            <input id="wpuf_post_count" name="wpuf_post_count[<?php echo $key; ?>]" type="text" size="5" value="<?php echo esc_attr( $count ) ?>" />
+                            <span class="description">
+            <?php _e( 'Enter -1 for unlimited.', 'wpuf-pro' ); ?>
+                            </span>
+                        </td>
+                    </tr>
+        <?php } ?>
             </tbody>
         </table>
         <?php
@@ -175,26 +153,19 @@ class WPUF_Pm_Pro {
      * @param int $level_id
      * @param int $user_id
      */
-    public function set_user_membership( $level_id, $user_id ) {
+    function set_user_membership( $level_id, $user_id ) {
         $user_level = pmpro_getMembershipLevelForUser( $user_id );
-
         if ( $user_level ) {
             // Update expiry
-            if ( ! empty( $user_level->expiration_number ) && ! empty( $user_level->expiration_number ) ) {
-                $date_string = sprintf( '%s %s', $user_level->expiration_number, $user_level->expiration_period );
-                $expire_date = gmdate( 'Y-m-d G:i:s', strtotime( $date_string ) );
-            } else {
-                $expire_date = 'unlimited';
-            }
-
-            $pack_id = $this->wpuf_get_pack_id_by_lvl_id( $level_id );
+            $date_string = sprintf( '%s %s', $user_level->expiration_number, $user_level->expiration_period );
+            $expire_date = date( 'Y-m-d G:i:s', strtotime( $date_string ) );
             // Update post count
-            $membership = array(
-                'pack_id'   => $pack_id,
-                'posts'     => get_post_meta( $pack_id, '_post_type_name', true ),
+            $membership  = array(
+                'pack_id'   => 0,
+                'posts'     => $this->get_option( $level_id ),
                 'status'    => null,
                 'expire'    => $expire_date,
-                'recurring' => 'no',
+                'recurring' => 'no'
             );
             update_user_meta( $user_id, '_wpuf_subscription_pack', $membership );
         } else {
@@ -207,42 +178,12 @@ class WPUF_Pm_Pro {
      *
      * @param int $user_id
      */
-    public function profile_update_expiry( $user_id ) {
-        $expires_year  = isset( $_REQUEST['expires_year'] ) ? intval( $_REQUEST['expires_year'] ) : 0;
-        $expires_month = isset( $_REQUEST['expires_month'] ) ? intval( $_REQUEST['expires_month'] ) : 0;
-        $expires_day   = isset( $_REQUEST['expires_day'] ) ? intval( $_REQUEST['expires_day'] ) : 0;
-
-        if ( ! empty( $_REQUEST['expires'] ) ) {
-            $expiration_date = $expires_year . '-' . $expires_month . '-' . $expires_day;
-            $expiration_date = gmdate( 'Y-m-d G:i:s', strtotime( $expiration_date ) );
+    function profile_update_expiry( $user_id ) {
+        if ( !empty( $_POST['expires'] ) ) {
+            $expiration_date = intval( $_REQUEST['expires_year'] ) . '-' . intval( $_REQUEST['expires_month'] ) . '-' . intval( $_REQUEST['expires_day'] );
+            $expiration_date = date( 'Y-m-d G:i:s', strtotime( $expiration_date ) );
             update_user_meta( $user_id, 'wpuf_sub_validity', $expiration_date );
         }
-    }
-
-    /**
-     * Get subs pack id using pmpro lvl id
-     *
-     * @since 3.4.7
-     *
-     * @param $level_id
-     *
-     * @return int
-     */
-    public function wpuf_get_pack_id_by_lvl_id( $level_id ) {
-        $posts = get_posts(
-            [
-                'post_type'      => 'wpuf_subscription',
-                'meta_query'     => [
-                    [
-                        'key' => 'wpuf_pmpro_lvl_id',
-                        'value' => $level_id,
-                        'compare' => '=',
-                    ],
-                ],
-                'posts_per_page' => '1',
-            ]
-        );
-        return $posts ? $posts[0]->ID : 0;
     }
 
 }

@@ -6,7 +6,6 @@ class WPUF_Admin_Posting_Profile extends WPUF_Admin_Posting {
 
         add_action( 'personal_options_update', array($this, 'save_fields') );
         add_action( 'edit_user_profile_update', array($this, 'save_fields') );
-        add_action( 'wpuf_pro_frontend_form_update_user_meta', array( $this, 'update_vendor_profile_meta' ), 10, 2 );
 
         add_action( 'show_user_profile', array($this, 'render_form') );
         add_action( 'edit_user_profile', array($this, 'render_form') );
@@ -35,43 +34,29 @@ class WPUF_Admin_Posting_Profile extends WPUF_Admin_Posting {
             return;
         }
 
+        $scheme = is_ssl() ? 'https' : 'http';
+        wp_enqueue_script( 'google-maps', $scheme . '://maps.google.com/maps/api/js?sensor=true' );
         wp_enqueue_script( 'jquery-ui-autocomplete' );
-
-        $api_key = wpuf_get_option( 'gmap_api_key', 'wpuf_general' );
-
-        if ( ! empty( $api_key ) ) {
-            $scheme = is_ssl() ? 'https' : 'http';
-            wp_enqueue_script( 'google-maps', $scheme . '://maps.google.com/maps/api/js?libraries=places&key=' . $api_key, [], null );
-        }
     }
 
     function delete_avatar_ajax() {
-        check_ajax_referer( 'wpuf_nonce' );
 
-        $post_data = wp_unslash( $_POST );
-
-        if ( isset( $post_data['user_id'] ) && !empty( $post_data['user_id'] ) ) {
-            $user_id = $post_data['user_id'];
+        if ( isset( $_POST['user_id'] ) && !empty( $_POST['user_id'] ) ) {
+            $user_id = $_POST['user_id'];
         } else {
             $user_id = get_current_user_id();
         }
 
         $avatar = get_user_meta( $user_id, 'user_avatar', true );
-
         if ( $avatar ) {
-            if ( absint( $avatar ) > 0 ) {
-                wp_delete_attachment( $avatar, true );
-            } else {
-                $upload_dir = wp_upload_dir();
+            $upload_dir = wp_upload_dir();
 
-                $full_url = str_replace( $upload_dir['baseurl'],  $upload_dir['basedir'], $avatar );
+            $full_url = str_replace( $upload_dir['baseurl'],  $upload_dir['basedir'], $avatar );
 
-                if ( file_exists( $full_url ) ) {
-                    unlink( $full_url );
-                }
+            if ( file_exists( $full_url ) ) {
+                unlink( $full_url );
+                delete_user_meta( $user_id, 'user_avatar' );
             }
-
-            delete_user_meta( $user_id, 'user_avatar' );
         }
 
         die();
@@ -215,57 +200,4 @@ class WPUF_Admin_Posting_Profile extends WPUF_Admin_Posting {
         }
     }
 
-    /**
-     * Update vendor user meta in admin user edit page
-     *
-     * If we show any profile/registration form in admin user edit page,
-     * then we may need to update certain meta data in a customized way.
-     * For example, shopurl for Dokan Vendor Registration form need to handle
-     * separately, since shopurl meta doesn't actually works as the vendor shop
-     * url. We need to set it as user_nicename.
-     *
-     * @since 3.3.0
-     *
-     * @param int   $user_id
-     * @param array $postdata
-     *
-     * @return void
-     */
-    public function update_vendor_profile_meta( $user_id, $postdata ) {
-        global $pagenow;
-
-        if ( 'user-edit.php' !== $pagenow || ! current_user_can( 'edit_users' ) ) {
-            return;
-        }
-
-        /**
-         * For store url, we don't need to update the nicename here. Let Dokan handle
-         * that part. Otherwise, we need to remove the dokan action that hooked in
-         * edit_user_profile_update action.
-         *
-         * When WPUF form displays in user edit page, we have duplicate inputs for shop url,
-         * one from WPUF and one from Dokan. User may change either the WPUF input or the Dokan
-         * input. We need to handle both cases. The condition here gives priority to WPUF input,
-         * so that even user tries to set different name in both WPUF and Dokan inputs in same submit,
-         * only WPUF input works, not Dokan input.
-         */
-        if ( isset( $postdata['shopurl'] ) && user_can( $user_id, 'seller' ) ) {
-            $userdata          = get_userdata( $user_id );
-            $current_store_url = $userdata->user_nicename;
-            $shop_url          = sanitize_text_field( $postdata['shopurl'] );
-            $dokan_store_url   = sanitize_text_field( $postdata['dokan_store_url'] );
-
-            if ( $shop_url !== $current_store_url ) {
-                $existing_user = get_user_by( 'slug', $shop_url );
-
-                if ( $existing_user instanceof WP_User ) {
-                    update_user_meta( $user_id, 'shopurl', $dokan_store_url );
-                } else {
-                    $_POST['dokan_store_url'] = $shop_url;
-                }
-            } else if ( $dokan_store_url !== $current_store_url ) {
-                update_user_meta( $user_id, 'shopurl', $dokan_store_url );
-            }
-        }
-    }
 }

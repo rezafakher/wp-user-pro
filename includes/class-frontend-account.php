@@ -89,12 +89,11 @@ class WPUF_Frontend_Account_Pro {
         $allow_profile_edit = wpuf_get_option( 'show_edit_profile_menu', 'wpuf_my_account', 'on' );
 
         if ( $allow_profile_edit != 'on' ) {
-            foreach ($sections as $section => $label) {
-                if ( $section == 'edit-profile' ) {
-                    unset( $sections[ $section ] );
+            foreach ($sections as $key => $value) {
+                if ( $value['slug'] == 'edit-profile' ) {
+                    unset($sections[$key]);
                 }
             }
-
             return $sections;
         }
 

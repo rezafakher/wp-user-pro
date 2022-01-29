@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: QR Code
-Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/qr-code/
+Plugin URI: http://wedevs.com/
 Thumbnail Name: wpuf-qr.png
 Description: Post Qr code generator plugin
 Version: 0.1

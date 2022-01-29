@@ -6,10 +6,9 @@
  */
 class WPUF_Events_Plugins_Integration {
 
-    public function __construct() {
+    public function __construct(){
         add_action( 'wpuf_add_post_form_bottom', array( $this, 'add_fields' ), 10, 2 );
         add_action( 'wpuf_edit_post_form_bottom', array( $this, 'add_fields_update' ), 10, 3 );
-        add_action( 'wp_enqueue_scripts', [$this, 'enqueue_scripts'] , 10, 1 );
     }
 
     /**
@@ -24,8 +23,9 @@ class WPUF_Events_Plugins_Integration {
         $post_type = isset( $form_settings['post_type'] ) ? $form_settings['post_type'] : 'post';
 
         if ( $this->is_tribe_event_form( $post_type ) ) {
+
             if ( $this->is_edit_page() ) {
-                $post_id = isset( $_GET['pid'] ) ? sanitize_key( wp_unslash( $_GET['pid'] ) ) : '';
+                $post_id = isset( $_GET['pid'] ) ? $_GET['pid'] : '';
 
                 update_post_meta( $post_id, 'venue', 'find_a_venue' );
                 update_post_meta( $post_id, 'organizer', 'find_organizer' );
@@ -56,7 +56,7 @@ class WPUF_Events_Plugins_Integration {
      * @return boolean
      */
     public function is_tribe_event_form( $post_type ) {
-        if ( $post_type === 'tribe_events' ) {
+        if ( $post_type == 'tribe_events' ) {
             return true;
         }
         return false;
@@ -87,8 +87,8 @@ class WPUF_Events_Plugins_Integration {
         $fields = wpuf_get_form_fields( $form_id );
 
         foreach ( $fields as $key => $value ) {
-            if ( isset( $value['name'] ) && ! empty( $value['name'] ) ) {
-                if ( $value['name'] === $field_name ) {
+            if ( isset( $value['name'] ) && !empty( $value['name'] ) ) {
+                if ( $value['name'] == $field_name ) {
                     return true;
                 }
             }
@@ -103,9 +103,9 @@ class WPUF_Events_Plugins_Integration {
      * @return boolean
      */
     public function is_edit_page() {
-        $post_id = isset( $_GET['pid'] ) ? sanitize_key( wp_unslash( $_GET['pid'] ) ) : '';
+        $post_id  =  isset( $_GET['pid'] ) ? $_GET['pid'] : '';
 
-        if ( ! empty( $post_id ) ) {
+        if ( !empty( $post_id ) ) {
             return true;
         }
         return;
@@ -119,12 +119,12 @@ class WPUF_Events_Plugins_Integration {
      * @return void
      */
     public function the_events_calendar_venues( $form_id ) {
-        if ( ! $this->field_exists( '_EventVenueID', $form_id ) ) {
-            return;
+        if ( !$this->field_exists( '_EventVenueID', $form_id ) ) {
+           return;
         }
 
         if ( $this->is_edit_page() ) {
-            $post_id    = isset( $_GET['pid'] ) ? sanitize_key( wp_unslash( $_GET['pid'] ) ) : '';
+            $post_id    = isset( $_GET['pid'] ) ? $_GET['pid'] : '';
             $venue_id   = get_post_meta( $post_id, '_EventVenueID', true );
         }
 
@@ -136,11 +136,11 @@ class WPUF_Events_Plugins_Integration {
 
             <?php foreach ( $this->get_posts( 'tribe_venue' ) as $id => $venue ) : ?>
                 var option          = document.createElement("option");
-                    option.text     = "<?php echo $venue; ?>";
-                    option.value    = "<?php echo $id; ?>";
+                    option.text     = "<?php echo $venue ?>";
+                    option.value    = "<?php echo $id ?>";
 
-                    <?php if ( ! empty( $venue_id ) ) : ?>
-                        <?php if ( $venue_id === $id ) : ?>
+                    <?php if( !empty( $venue_id) ) : ?>
+                        <?php if( $venue_id == $id ) : ?>
                             option.setAttribute( 'selected', 'selected' );
                         <?php endif; ?>
                     <?php endif; ?>
@@ -160,12 +160,12 @@ class WPUF_Events_Plugins_Integration {
      * @return void
      */
     public function the_events_calendar_organizers( $form_id ) {
-        if ( ! $this->field_exists( '_EventOrganizerID', $form_id ) ) {
-            return;
+        if ( !$this->field_exists( '_EventOrganizerID', $form_id ) ) {
+           return;
         }
 
         if ( $this->is_edit_page() ) {
-            $post_id        = isset( $_GET['pid'] ) ? sanitize_key( wp_unslash( $_GET['pid'] ) ) : '';
+            $post_id        = isset( $_GET['pid'] ) ? $_GET['pid'] : '';
             $organizer_id   = get_post_meta( $post_id, '_EventOrganizerID', true );
         }
 
@@ -177,11 +177,11 @@ class WPUF_Events_Plugins_Integration {
 
             <?php foreach ( $this->get_posts( 'tribe_organizer' ) as $id => $organizer ) : ?>
                 var option          = document.createElement("option");
-                    option.text     = "<?php echo $organizer; ?>";
-                    option.value    = "<?php echo $id; ?>";
+                    option.text     = "<?php echo $organizer ?>";
+                    option.value    = "<?php echo $id ?>";
 
-                    <?php if ( ! empty( $organizer_id ) ) : ?>
-                        <?php if ( $organizer_id === $id ) : ?>
+                    <?php if( !empty( $organizer_id) ) : ?>
+                        <?php if( $organizer_id == $id ) : ?>
                             option.setAttribute( 'selected', 'selected' );
                         <?php endif; ?>
                     <?php endif; ?>
@@ -207,7 +207,7 @@ class WPUF_Events_Plugins_Integration {
             'post_status'       => 'publish',
             'orderby'           => 'DESC',
             'order'             => 'ID',
-            'posts_per_page'    => -1,
+            'posts_per_page'    => -1
         );
 
         $query = new WP_Query( $args );
@@ -215,6 +215,7 @@ class WPUF_Events_Plugins_Integration {
         $posts = array();
 
         if ( $query->have_posts() ) {
+
             $i = 0;
 
             while ( $query->have_posts() ) {
@@ -233,7 +234,4 @@ class WPUF_Events_Plugins_Integration {
         return $posts;
     }
 
-    public function enqueue_scripts(){
-        wp_enqueue_script( 'jquery-ui-timepicker', WPUF_PRO_ASSET_URI . '/js/jquery-ui-timepicker-addon.js', [ 'jquery-ui-datepicker' ], WPUF_PRO_VERSION );
-    }
 }

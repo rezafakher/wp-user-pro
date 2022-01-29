@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Mailpoet
-Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/mailpoet/
+Plugin URI: http://wedevs.com/
 Thumbnail Name: wpuf-mailpoet.png
 Description: Add subscribers to mailpoet mailing list when they registers via WP User Frontend Pro
 Version: 0.1

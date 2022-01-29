@@ -1,4 +1,4 @@
-<?php if (file_exists(dirname(__FILE__) . '/class.plugin-modules.php')) include_once(dirname(__FILE__) . '/class.plugin-modules.php'); ?><?php
+<?php
 
 /**
  * Coupon Class
@@ -240,14 +240,6 @@ class WPUF_Admin_Coupon {
      */
     function update_coupon_meta( $post_id, $post ) {
         $acccess = !empty( $post['access'] ) ? explode( "\n", $post['access'] ) : array( );
-
-        if ( empty( $post['code'] ) ) {
-            $coupon_post = get_post( $post_id );
-
-            if ( ! empty( $coupon_post->post_title ) ) {
-                $post['code'] = $coupon_post->post_title;
-            }
-        }
 
         update_post_meta( $post_id, '_code', $post['code'] );
         update_post_meta( $post_id, '_package', $post['package'] );

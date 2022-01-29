@@ -101,7 +101,7 @@ class WPUF_New_User_Approve {
         }
 
         if ( update_user_meta( $user_id, $key, $status ) ) {
-            WPUF_Frontend_Form_Profile::user_status_update_notification( $status, $user_id );
+            WPUF_Frontend_Form_Profile::user_email_notification( $status, $user_id );
         }
 
     }
@@ -377,7 +377,7 @@ class WPUF_New_User_Approve {
                     $approved = 0;
                     foreach ( $user_ids as $user_id ) {
                         if ( update_user_meta( $user_id, 'wpuf_user_status', 'approved' ) ) {
-                            WPUF_Frontend_Form_Profile::user_status_update_notification( 'approved', $user_id );
+                            WPUF_Frontend_Form_Profile::user_email_notification( 'approved', $user_id );
                             $approved++;
                         }
                     }
@@ -389,7 +389,7 @@ class WPUF_New_User_Approve {
                     $pending = 0;
                     foreach ( $user_ids as $user_id ) {
                         if ( update_user_meta( $user_id, 'wpuf_user_status', 'pending' ) ) {
-                            WPUF_Frontend_Form_Profile::user_status_update_notification( 'pending', $user_id );
+                            WPUF_Frontend_Form_Profile::user_email_notification( 'pending', $user_id );
                             $pending++;
                         }
                     }
@@ -401,7 +401,7 @@ class WPUF_New_User_Approve {
                     $denied = 0;
                     foreach ( $user_ids as $user_id ) {
                         if ( update_user_meta( $user_id, 'wpuf_user_status', 'denied' ) ) {
-                            WPUF_Frontend_Form_Profile::user_status_update_notification( 'denied', $user_id );
+                            WPUF_Frontend_Form_Profile::user_email_notification( 'denied', $user_id );
                             $denied++;
                         }
                     }

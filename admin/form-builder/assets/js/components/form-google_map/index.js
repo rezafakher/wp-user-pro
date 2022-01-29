@@ -18,10 +18,6 @@ Vue.component('form-google_map', {
 
     /* global google */
     mounted: function () {
-        if (typeof window.google === 'undefined') {
-            return;
-        }
-
         var self = this,
             default_pos = self.field.default_pos,
             default_zoom = self.field.zoom;

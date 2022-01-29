@@ -1,7 +1,7 @@
 <?php
 /**
   Plugin Name: User Activity
-  Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/user-activity/
+  Plugin URI: https://wedevs.com/products/plugins/wp-user-frontend-pro/user-activity/
   Thumbnail Name: wpuf-activity.png
   Description: Handle user activity in frontend
   Version: 1.0.0
@@ -259,15 +259,15 @@ class WPUF_User_Activity {
         ?>
 
         <div class="wpuf-profile-container">
-<!--            <ul class="wpuf-profile-tabs">-->
-<!--                <li class="tab-link --><?php //echo $current_about ?><!--" data-tab="about-tab">About</li>-->
-<!--                <li class="tab-link --><?php //echo $current_activity ?><!--" data-tab="activity-tab">Activity</li>-->
-<!--            </ul>-->
-<!---->
-<!--            <div id="about-tab" class="wpuf-profile-tab-content --><?php //echo $current_about ?><!--">-->
-<!--                --><?php //do_action( 'wpuf_ud_profile_about' );  ?>
-<!--            </div>-->
-<!--            <div id="activity-tab" class="wpuf-profile-tab-content --><?php //echo $current_activity ?><!--">-->
+            <ul class="wpuf-profile-tabs">
+                <li class="tab-link <?php echo $current_about ?>" data-tab="about-tab">About</li>
+                <li class="tab-link <?php echo $current_activity ?>" data-tab="activity-tab">Activity</li>
+            </ul>
+
+            <div id="about-tab" class="wpuf-profile-tab-content <?php echo $current_about ?>">
+                <?php do_action( 'wpuf_ud_profile_about' );  ?>
+            </div>
+            <div id="activity-tab" class="wpuf-profile-tab-content <?php echo $current_activity ?>">
                 <div class="wpuf-activity-table" >
                 <?php foreach ( $results as $result ): ?>
                     <div class="wpuf-activity-row">
@@ -300,7 +300,7 @@ class WPUF_User_Activity {
                     ));
                     echo '</div>';
                     ?>
-<!--                </div>-->
+                </div>
             </div>
         </div>
 

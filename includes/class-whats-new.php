@@ -85,11 +85,10 @@ class WPUF_Pro_Whats_New {
      * @return void
      */
     public function admin_notice() {
-      return;
-        
 
-        wp_enqueue_script( 'wp-util' );
-
+        if ( ! $this->has_new() ) {
+            return;
+        }
         ?>
         <div class="notice notice-success wpuf-whats-new-notice pro">
 
