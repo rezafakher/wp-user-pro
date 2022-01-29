@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! class_exists( '\Stripe\Stripe' ) ) {
-    require_once( dirname( __FILE__ ) . '/../lib/stripe/init.php' );
+    require_once dirname( __FILE__ ) . '/../lib/stripe/init.php';
 }
 
 /**
@@ -33,14 +33,13 @@ class WPUF_Gateway_Stripe {
      *
      * @return string
      * @since  0.1
-     *
      */
     public function payment_options( $options ) {
         $options[] = array(
             'name'    => 'gate_instruct_stripe',
             'label'   => __( 'Stripe Instruction', 'wpuf-pro' ),
-            'type'    => 'textarea',
-            'default' => __( 'Enter your credit card information in order to proceed the payment.', 'wpuf-pro' )
+            'type'    => 'wysiwyg',
+            'default' => __( 'Enter your credit card information in order to proceed the payment.', 'wpuf-pro' ),
         );
 
         $options[] = array(
@@ -48,7 +47,7 @@ class WPUF_Gateway_Stripe {
             'label'   => __( 'Enable Legacy Stripe API', 'wpuf-pro' ),
             'type'    => 'checkbox',
             'default' => 'off',
-            'desc'    => __( 'Check if you want to use legacy Stripe API.', 'wpuf-pro' )
+            'desc'    => __( 'Check if you want to use legacy Stripe API.', 'wpuf-pro' ),
         );
 
         $options[] = array(
@@ -56,17 +55,30 @@ class WPUF_Gateway_Stripe {
             'label'   => __( 'Enable Stripe 3D Security', 'wpuf-pro' ),
             'type'    => 'checkbox',
             'default' => 'off',
-            'desc'    => __( 'Check if you want to use Stripe 3D Security.', 'wpuf-pro' )
+            'desc'    => __( 'Check if you want to use Stripe 3D Security.', 'wpuf-pro' ),
         );
 
         $options[] = array(
             'name'  => 'stripe_api_secret',
-            'label' => __( 'Stripe Secret Key', 'wpuf-pro' )
+            'label' => __( 'Stripe Secret Key', 'wpuf-pro' ),
         );
 
         $options[] = array(
             'name'  => 'stripe_api_key',
-            'label' => __( 'Stripe Publishable Key', 'wpuf-pro' )
+            'label' => __( 'Stripe Publishable Key', 'wpuf-pro' ),
+        );
+
+        $options[] = [
+            'name'    => 'stripe_endpoint',
+            'label'   => __( 'Stripe Webhook endpoint', 'wpuf-pro' ),
+            'default' => add_query_arg( 'action', 'wpuf_stripe_payment_response', home_url( '' ) ),
+            'desc'    => __( 'Set this to your webhook endpoint', 'wpuf-pro' ),
+            'class'   => 'disabled',
+        ];
+
+        $options[] = array(
+            'name'  => 'stripe_signing_secret',
+            'label' => __( 'Stripe Signing Secret', 'wpuf-pro' ),
         );
 
         return $options;
@@ -81,7 +93,6 @@ class WPUF_Gateway_Stripe {
      *
      * @return void
      * @since  0.1
-     *
      */
     public function gateway_form( $type, $post_id, $pack_id ) {
         ?>
@@ -107,12 +118,12 @@ class WPUF_Gateway_Stripe {
         $stripe_api_secret = wpuf_get_option( 'stripe_api_secret', 'wpuf_payment' );
 
         \Stripe\Stripe::setApiKey( $stripe_api_secret );
-        \Stripe\Stripe::setApiVersion( "2019-05-16" );
+        \Stripe\Stripe::setApiVersion( '2019-05-16' );
         \Stripe\Stripe::setAppInfo(
-            "WP User Frontend Pro",
+            'WP User Frontend Pro',
             WPUF_PRO_VERSION,
-            "https://wedevs.com/wp-user-frontend-pro/",
-            "pp_partner_Ee9F0QbhSGowvH" //weDevs' Stripe partner ID,
+            'https://wedevs.com/wp-user-frontend-pro/',
+            'pp_partner_Ee9F0QbhSGowvH' //weDevs' Stripe partner ID,
         );
     }
 
@@ -124,32 +135,51 @@ class WPUF_Gateway_Stripe {
     public function configure_stripe_webhook() {
         // Register webhook to receive payment notification
         $listener_url = add_query_arg( 'action', 'wpuf_stripe_payment_response', home_url( '/' ) );
-        // $listener_url = 'http://da96bc26.ngrok.io/?action=wpuf_stripe_payment_response';
+        //         $listener_url = 'http://b8fdcedb8660.ngrok.io?action=wpuf_stripe_payment_response';
 
         $webhooks = \Stripe\WebhookEndpoint::all( [ 'limit' => 16 ] );
 
         if ( empty( $webhooks->data ) ) {
-            \Stripe\WebhookEndpoint::create( [
-                "url"            => $listener_url,
-                "enabled_events" => [
-                    'payment_intent.succeeded',
-                    'customer.subscription.created',
-                    'customer.subscription.deleted'
+            \Stripe\WebhookEndpoint::create(
+                [
+                    'url'            => $listener_url,
+                    'enabled_events' => [
+                        'payment_intent.succeeded',
+                        'customer.subscription.created',
+                        'customer.subscription.deleted',
+                        'invoice.payment_failed',
+                    ],
                 ]
-            ] );
+            );
         } else {
             foreach ( $webhooks->data as $webhook ) {
                 if ( self::check_urls_same( $listener_url, $webhook->url ) ) {
+                    //invoice.payment_failed for already configured client
+                    if ( ! in_array( 'invoice.payment_succeeded', $webhook->enabled_events, true ) ) {
+                        \Stripe\WebhookEndpoint::update(
+                            $webhook->id, [
+                                'enabled_events' => [
+                                    'payment_intent.succeeded',
+                                    'customer.subscription.created',
+                                    'customer.subscription.deleted',
+                                    'invoice.payment_failed',
+                                ],
+                            ]
+                        );
+                    }
                     break;
                 }
-                \Stripe\WebhookEndpoint::create( [
-                    "url"            => $listener_url,
-                    "enabled_events" => [
-                        'payment_intent.succeeded',
-                        'customer.subscription.created',
-                        'customer.subscription.deleted'
+                \Stripe\WebhookEndpoint::create(
+                    [
+                        'url'            => $listener_url,
+                        'enabled_events' => [
+                            'payment_intent.succeeded',
+                            'customer.subscription.created',
+                            'customer.subscription.deleted',
+                            'invoice.payment_failed',
+                        ],
                     ]
-                ] );
+                );
             }
         }
     }
@@ -170,12 +200,13 @@ class WPUF_Gateway_Stripe {
         parse_str( $request_data['form_data'], $form_data );
 
         $data           = $this->get_payment_data( $form_data );
-        $billing_amount = $data['billing_amount'];
+        $billing_amount = $data['price'];
         $stripe_token   = isset( $request_data['token'] ) ? $request_data['token'] : '';
         $user_id        = intval( $data['user_info']['id'] );
         $user_email     = $data['user_info']['email'];
+        $user_name      = $data['user_info']['first_name'] . $data['user_info']['last_name'];
 
-        if ( $billing_amount == 0 ) {
+        if ( (int) $billing_amount === 0 ) {
             WPUF_Subscription::init()->new_subscription( $user_id, $data['item_number'], $profile_id = null, false, 'free' );
 
             wp_send_json( array( 'status' => 'succeed' ) );
@@ -187,16 +218,16 @@ class WPUF_Gateway_Stripe {
         $stripe_amount = intval( floatval( $billing_amount ) * 100 );
 
         $this->configure_stripe();
+        $this->configure_stripe_webhook();
 
         if ( empty( $data['custom']['recurring_pay'] ) ) {
-            if ( $use_3ds == 'on' ) {
-                $this->configure_stripe_webhook();
+            if ( $use_3ds === 'on' ) {
                 $old_api = 'off';
             }
         }
 
-        if ( 'on' == $old_api && $use_3ds != 'on' ) {
-            \Stripe\Stripe::setApiVersion( "2015-01-26" );
+        if ( 'on' === $old_api && $use_3ds !== 'on' ) {
+            \Stripe\Stripe::setApiVersion( '2015-01-26' );
         }
 
         $tax_rate = wpuf_current_tax_rate();
@@ -209,99 +240,105 @@ class WPUF_Gateway_Stripe {
         }
 
         $stripe_customer_id = $this->get_stripe_customer_id( $user_id );
+        $metadata           = [
+            'user_id' => $user_id,
+            'tax_rate' => $tax_rate,
+            'pack_id' => $form_data['pack_id'],
+            'post_id' => $form_data['post_id'],
+            'email' => $user_email,
+            'user_name' => $user_name,
+        ];
 
-
-        if ( $data['type'] == 'pack' && $data['custom']['recurring_pay'] == 'yes' ) {
-            $is_recurring = true;
-
+        if ( $data['type'] === 'pack' && $data['custom']['recurring_pay'] === 'yes' ) {
             $subscription_package_name = $data['custom']['post_title'];
             $subscription_package_id   = intval( $post_data['pack_id'] );
+            $trial_period_days         = 0;
 
+            if ( $data['custom']['trial_status'] === 'yes' ) {
+                $trial_duration_type = $data['custom']['trial_duration_type'];
+                $trial_duration      = absint( $data['custom']['trial_duration'] );
+
+                switch ( $trial_duration_type ) {
+                    case 'week':
+                        $trial_period_days = $trial_duration * 7;
+                        break;
+
+                    case 'month':
+                        $trial_period_days = $trial_duration * 30;
+                        break;
+
+                    case 'year':
+                        $trial_period_days = $trial_duration * 365;
+                        break;
+
+                    case 'day':
+                    default:
+                        $trial_period_days = $trial_duration;
+                        break;
+                }
+                //Set trial meta for once per user
+                if ( ! get_user_meta( $user_id, '_wpuf_used_trial', true ) ) {
+                    update_user_meta( $user_id, '_wpuf_used_trial', 'yes' );
+                }
+            }
 
             try {
                 $stripe_plan = \Stripe\Plan::retrieve( $subscription_package_id );
 
-                if ( $stripe_plan->id == $subscription_package_id && ! empty( $data['coupon_id'] ) ) {
-                    $new_pack_id = $subscription_package_id . time();
-
-                    $new_plan = \Stripe\Plan::create( array(
-                        "product"        => [
-                            "name" => $subscription_package_name,
-                            "type" => "service"
-                        ],
-                        "nickname"       => $subscription_package_name,
-                        "interval"       => $data['custom']['cycle_period'],
-                        "interval_count" => intval( $data['custom']['billing_cycle_number'] ),
-                        "currency"       => $data['currency'],
-                        "amount"         => $stripe_amount,
-                        "id"             => $new_pack_id
-                    ) );
+                if ( absint( $stripe_plan->trial_period_days ) !== $trial_period_days ) {
+                    $stripe_plan = $stripe_plan->update(
+                        $stripe_plan->id, array(
+                            'trial_period_days' => $trial_period_days,
+                        )
+                    );
                 }
 
+                $subscription_package_id = $stripe_plan->id;
             } catch ( Exception $e ) {
                 $plan_data = array(
-                    "product"        => [
-                        "name" => $subscription_package_name,
-                        "type" => "service"
+                    'product'        => [
+                        'name' => $subscription_package_name,
+                        'type' => 'service',
                     ],
-                    "nickname"       => $subscription_package_name,
-                    "interval"       => $data['custom']['cycle_period'],
-                    "interval_count" => intval( $data['custom']['billing_cycle_number'] ),
-                    "currency"       => $data['currency'],
-                    "amount"         => $stripe_amount,
+                    'nickname'       => $subscription_package_name,
+                    'interval'       => $data['custom']['cycle_period'],
+                    'interval_count' => intval( $data['custom']['billing_cycle_number'] ),
+                    'currency'       => $data['currency'],
+                    'amount'         => $stripe_amount,
                     'id'             => $subscription_package_id,
                 );
 
-                if ( $data['custom']['trial_status'] == 'yes' ) {
-                    $trial_duration_type = intval( $data['custom']['trial_duration_type'] );
-                    $trial_duration      = intval( $data['custom']['trial_duration'] );
-
-                    switch ( $trial_duration_type ) {
-                        case 'day':
-                            $plan_data['trial_period_days'] = $trial_duration;
-                            break;
-
-                        case 'week':
-                            $plan_data['trial_period_days'] = $trial_duration * 7;
-                            break;
-
-                        case 'month':
-                            $plan_data['trial_period_days'] = $trial_duration * 30;
-                            break;
-
-                        case 'year':
-                            $plan_data['trial_period_days'] = $trial_duration * 365;
-                            break;
-                    }
-
+                if ( $trial_period_days ) {
+                    $plan_data['trial_period_days'] = $trial_period_days;
                 }
 
-                $new_plan = \Stripe\Plan::create( $plan_data );
-
-            }
-
-            if ( ! empty( $data['coupon_id'] ) ) {
-                $subscription_package_id = $new_plan->id;
+                $stripe_plan = \Stripe\Plan::create( $plan_data );
+                $subscription_package_id = $stripe_plan->id;
             }
 
             if ( ! empty( $stripe_customer_id ) ) {
                 try {
-                    if ( $old_api == 'on' ) {
+                    if ( $old_api === 'on' ) {
                         $customer     = \Stripe\Customer::retrieve( $stripe_customer_id );
-                        $subscription = $customer->subscriptions->create( array(
-                            'plan'        => $subscription_package_id,
-                            'tax_percent' => $tax_rate,
-                        ) );
+                        $subscription = $customer->subscriptions->create(
+                            array(
+                                'plan'        => $subscription_package_id,
+                                'tax_percent' => $tax_rate,
+                                'metadata'    => $metadata,
+                            )
+                        );
                     } else {
                         $subscription_data = array(
                             array(
-                                'expand'   => [ 'latest_invoice.payment_intent' ],
-                                'customer' => $stripe_customer_id,
-                                'items'    => [ [ 'plan' => $subscription_package_id ] ]
-                            )
+                                'expand'      => [ 'latest_invoice.payment_intent' ],
+                                'customer'    => $stripe_customer_id,
+                                'items'       => [ [ 'plan' => $subscription_package_id ] ],
+                                'tax_percent' => $tax_rate,
+                                'metadata'    => $metadata,
+                            ),
                         );
 
-                        if ( $data['custom']['trial_status'] == 'yes' ) {
+                        if ( $data['custom']['trial_status'] === 'yes' ) {
                             $subscription_data['trial_from_plan'] = true;
                         }
 
@@ -309,8 +346,11 @@ class WPUF_Gateway_Stripe {
                             $subscription = \Stripe\Subscription::create( $subscription_data );
                             update_user_meta( $subscription->id, '_wpuf_stripe_subscription_id', $user_id );
 
-                            wp_send_json( $subscription );
+                            if ( isset( $tax_rate ) ) {
+                                update_user_meta( $user_id, '_wpuf_tax_rate', $tax_rate );
+                            }
 
+                            wp_send_json( $subscription );
                         } catch ( Exception $e ) {
                             WP_User_Frontend::log( 'creating subscription', $e->getMessage() );
                         }
@@ -319,15 +359,17 @@ class WPUF_Gateway_Stripe {
                     WP_User_Frontend::log( 'payment', $e->getMessage() );
                 }
             }
-
         } else {
             try {
-                $intent = \Stripe\PaymentIntent::create( [
-                    'amount'               => $stripe_amount,
-                    'currency'             => $data['currency'],
-                    'confirmation_method'  => 'automatic',
-                    'payment_method_types' => [ 'card' ],
-                ] );
+                $intent = \Stripe\PaymentIntent::create(
+                    [
+                        'amount'               => intval( floatval( $data['billing_amount'] ) * 100 ),
+                        'currency'             => $data['currency'],
+                        'confirmation_method'  => 'automatic',
+                        'payment_method_types' => [ 'card' ],
+                        'metadata'             => $metadata,
+                    ]
+                );
 
                 wp_send_json( $intent );
             } catch ( Exception $e ) {
@@ -360,12 +402,12 @@ class WPUF_Gateway_Stripe {
 
             if ( $user_id && ! is_user_logged_in() ) {
                 $userdata = get_userdata( $user_id );
-            } else if ( $type == 'post' && ! is_user_logged_in() ) {
+            } elseif ( $type === 'post' && ! is_user_logged_in() ) {
                 $post     = get_post( $post_id );
                 $user_id  = $post->post_author;
                 $userdata = get_userdata( $user_id );
             } else {
-                $userdata             = new stdClass;
+                $userdata             = new stdClass();
                 $userdata->ID         = 0;
                 $userdata->user_email = '';
                 $userdata->first_name = '';
@@ -412,9 +454,9 @@ class WPUF_Gateway_Stripe {
                 'id'         => $userdata->ID,
                 'email'      => $userdata->user_email,
                 'first_name' => $userdata->first_name,
-                'last_name'  => $userdata->last_name
+                'last_name'  => $userdata->last_name,
             ),
-            'date'        => date( 'Y-m-d H:i:s' ),
+            'date'        => gmdate( 'Y-m-d H:i:s' ),
             'post_data'   => $form_data,
             'custom'      => isset( $custom ) ? $custom : '',
         );
@@ -425,21 +467,29 @@ class WPUF_Gateway_Stripe {
             update_user_meta( $userdata->ID, 'wpuf_address_fields', $address_fields );
         }
 
-        $billing_amount = empty( $data['price'] ) ? 0 : number_format( floatval( $data['price'] ), 2 );
+        /**
+         * Using thousand separator arg for number_format to quick fix
+         *
+         * @see Issue #193
+         *
+         * @todo: Payment gateways should be refactored. Calculation should be
+         *        in one place, not in gateway classes.
+         */
+        $billing_amount = empty( $data['price'] ) ? 0 : number_format( floatval( $data['price'] ), 2, '.', '' );
         $coupon_id      = '';
 
         $tax_enabled = wpuf_tax_enabled();
 
-        if ( $tax_enabled ) {
-            $tax_rate       = wpuf_current_tax_rate();
-            $tax_amount     = floatval( $tax_rate / 100 * $billing_amount );
-            $billing_amount = number_format( floatval( $tax_amount + $billing_amount ), 2 );
-            $data['tax']    = $tax_amount;
-        }
-
         if ( isset( $form_data['coupon_id'] ) && ! empty( $form_data['coupon_id'] ) ) {
             $billing_amount = WPUF_Coupons::init()->discount( $billing_amount, $form_data['coupon_id'], $data['item_number'] );
             $coupon_id      = $form_data['coupon_id'];
+        }
+
+        if ( $tax_enabled ) {
+            $tax_rate       = wpuf_current_tax_rate();
+            $tax_amount     = floatval( $tax_rate / 100 * $billing_amount );
+            $billing_amount = number_format( floatval( $tax_amount + $billing_amount ), 2, '.', '' );
+            $data['tax']    = $tax_amount;
         }
 
         $data['subtotal']       = floatval( $billing_amount );
@@ -465,10 +515,12 @@ class WPUF_Gateway_Stripe {
      * @since  3.1.9
      */
     public function create_customer( $user_id, $user_email, $stripe_token ) {
-        $customer = \Stripe\Customer::create( array(
-            'email'  => $user_email,
-            'source' => $stripe_token
-        ) );
+        $customer = \Stripe\Customer::create(
+            array(
+                'email'  => $user_email,
+                'source' => $stripe_token,
+            )
+        );
 
         update_user_meta( $user_id, '_wpuf_stripe_customer_id', $customer->id );
     }
@@ -480,7 +532,6 @@ class WPUF_Gateway_Stripe {
      *
      * @return void
      * @since  0.1
-     *
      */
     public function insert_payment( $data ) {
         $data                 = $this->get_payment_data( $data['post_data'] );
@@ -492,14 +543,8 @@ class WPUF_Gateway_Stripe {
         $subtotal             = $data['subtotal'];
         $tax                  = isset( $data['tax'] ) ? $data['tax'] : 0;
         $billing_amount       = $data['billing_amount'];
-        $redirect_page_id     = wpuf_get_option( 'payment_success', 'wpuf_payment' );
+        $return_url           = wpuf_payment_success_page( $data );
         $is_payment_completed = true;
-
-        if ( $redirect_page_id ) {
-            $return_url = add_query_arg( 'action', 'wpuf_stripe_success', get_permalink( $redirect_page_id ) );
-        } else {
-            $return_url = add_query_arg( 'action', 'wpuf_stripe_success', get_permalink( wpuf_get_option( 'subscription_page', 'wpuf_payment' ) ) );
-        }
 
         switch ( $data['type'] ) {
             case 'post':
@@ -511,7 +556,7 @@ class WPUF_Gateway_Stripe {
                 $post_id = 0;
                 $pack_id = $data['post_data']['pack_id'];
 
-                if ( $data['post_data']['recurring_pay'] == 'yes' && isset( $data['post_data']['stripeSubscriptionId'] ) && ! empty( $data['post_data']['stripeSubscriptionId'] ) ) {
+                if ( $data['post_data']['recurring_pay'] === 'yes' && isset( $data['post_data']['stripeSubscriptionId'] ) && ! empty( $data['post_data']['stripeSubscriptionId'] ) ) {
                     $stripe_subscription_id = $data['post_data']['stripeSubscriptionId'];
                 }
 
@@ -547,11 +592,11 @@ class WPUF_Gateway_Stripe {
             $transaction_id = wp_strip_all_tags( $transaction_id );
             $is_recurring   = false;
 
-            if ( isset( $data['post_data']['recurring_pay'] ) && $data['post_data']['recurring_pay'] == 'yes' ) {
+            if ( isset( $data['post_data']['recurring_pay'] ) && $data['post_data']['recurring_pay'] === 'yes' ) {
                 $is_recurring = true;
             }
 
-            WPUF_Payment::insert_payment( $payment_data, $transaction_id, $is_recurring );
+            // WPUF_Payment::insert_payment( $payment_data, $transaction_id, $is_recurring );
 
             $coupon_id = isset( $data['post_data']['coupon_id'] ) ? $data['post_data']['coupon_id'] : '';
 
@@ -565,7 +610,6 @@ class WPUF_Gateway_Stripe {
 
             delete_user_meta( $user_id, '_wpuf_user_active' );
             delete_user_meta( $user_id, '_wpuf_activation_key' );
-
         } else {
             WP_User_Frontend::log( 'payment', 'inserting payment failed.' );
         }
@@ -578,7 +622,7 @@ class WPUF_Gateway_Stripe {
      * Check for PayPal IPN Response.
      */
     public function check_response() {
-        if ( isset( $_GET['action'] ) && $_GET['action'] == 'wpuf_stripe_payment_response' ) {
+        if ( isset( $_GET['action'] ) && $_GET['action'] === 'wpuf_stripe_payment_response' ) {
             do_action( 'wpuf_stripe_ipn_response' );
         }
     }
@@ -589,9 +633,26 @@ class WPUF_Gateway_Stripe {
      * @since  3.1.9
      */
     public function update_transaction_status() {
-        if ( isset( $_GET['action'] ) && $_GET['action'] == 'wpuf_stripe_payment_response' ) {
+        if ( isset( $_GET['action'] ) && $_GET['action'] === 'wpuf_stripe_payment_response' ) {
             $payload = @file_get_contents( 'php://input' );
             $event   = null;
+            //phpcs:ignore
+            $sig_header      = ! empty( $_SERVER['HTTP_STRIPE_SIGNATURE'] ) ? $_SERVER['HTTP_STRIPE_SIGNATURE'] : '';
+            $payment_option  = get_option( 'wpuf_payment' );
+            $endpoint_secret = $payment_option && ! empty( $payment_option['stripe_signing_secret'] ) ? $payment_option['stripe_signing_secret'] : null;
+            try {
+                \Stripe\Webhook::constructEvent(
+                    $payload, $sig_header, $endpoint_secret
+                );
+            } catch ( \UnexpectedValueException $e ) {
+                WP_User_Frontend::log( 'Invalid Stripe', 'Invalid stripe value' );
+                http_response_code( 400 );
+                exit();
+            } catch ( \Stripe\Exception\SignatureVerificationException $e ) {
+                WP_User_Frontend::log( 'Invalid Stripe', 'Invalid stripe signature' );
+                http_response_code( 400 );
+                exit();
+            }
 
             $this->configure_stripe();
 
@@ -611,8 +672,8 @@ class WPUF_Gateway_Stripe {
             // Handle the event
             switch ( $event->type ) {
                 case 'payment_intent.succeeded':
-                    $paymentIntent = $event->data->object; // contains a \Stripe\PaymentIntent
-                    $this->handlePaymentIntentSucceeded( $paymentIntent );
+                    $payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+                    $this->handle_payment_intent_succeeded( $payment_intent );
                     break;
                 case 'customer.subscription.created':
                     $object = $event->data->object;
@@ -621,6 +682,10 @@ class WPUF_Gateway_Stripe {
                 case 'customer.subscription.deleted':
                     $object = $event->data->object;
                     $this->cancelUserSubscription( $object );
+                    break;
+                case 'invoice.payment_failed':
+                    $failed_invoice = $event->data->object; // contains a \Stripe\PaymentIntent
+                    $this->handle_failed_payment( $failed_invoice );
                     break;
                 // ... handle other event types
                 default:
@@ -643,8 +708,8 @@ class WPUF_Gateway_Stripe {
         $status     = $object->status;
         $invoice_id = $object->latest_invoice;
 
-        if ( ! empty( $invoice_id ) && $status == "trialing" ) {
-            $this->updateStatus( $invoice_id, 'completed' );
+        if ( ! empty( $invoice_id ) && $status === 'trialing' ) {
+            $this->update_trial_transaction( $object );
         }
     }
 
@@ -655,13 +720,14 @@ class WPUF_Gateway_Stripe {
      */
     public function cancelUserSubscription( $object ) {
         global $wpdb;
-
-        $stripe_subscription_id = $object->id;
-
+        $stripe_customer_id = $object->customer;
         //check if it's already there
-        $sql = $wpdb->prepare( "SELECT *
-                FROM " . $wpdb->prefix . "usermeta
-                WHERE meta_key = '_wpuf_subscription_pack' AND meta_value LIKE %s LIMIT 1", '%' . $stripe_subscription_id . '%' );
+        $sql = $wpdb->prepare(
+            'SELECT *
+                FROM ' . $wpdb->prefix . "usermeta
+                WHERE meta_key = '_wpuf_stripe_customer_id' AND meta_value LIKE %s LIMIT 1", '%' . $stripe_customer_id .
+            '%'
+        );
 
         $result = $wpdb->get_row( $sql );
 
@@ -669,10 +735,11 @@ class WPUF_Gateway_Stripe {
             return;
         }
 
-        $user_id = $result->user_id;
+        $data = [];
+        $data['user_id'] = $result->user_id;
 
-        if ( ! empty( $user_id ) ) {
-            $this->handle_cancel_subscription( '', $user_id );
+        if ( ! empty( $data['user_id'] ) ) {
+            $this->handle_cancel_subscription( $data );
         }
     }
 
@@ -681,11 +748,80 @@ class WPUF_Gateway_Stripe {
      *
      * @since  3.1.9
      */
-    public function handlePaymentIntentSucceeded( $paymentIntent ) {
-        $transaction_id = $paymentIntent->id;
+    public function handle_payment_intent_succeeded( $payment_intent ) {
+        $transaction_id = $payment_intent->id;
+        $invoice_id     = $payment_intent->invoice;
+        $is_recurring   = false;
+        //If Recurring pull metadata
+        if ( $invoice_id ) {
+            $this->configure_stripe();
+            $invoice      = \Stripe\Invoice::retrieve( $invoice_id );
+            $sub_meta     = $invoice->lines['data'][0]['metadata'];
+            $is_recurring = true;
+
+            $user_id    = isset( $sub_meta->user_id ) ? (int) $sub_meta->user_id : '';
+            $user_email = isset( $sub_meta->email ) ? $sub_meta->email : '';
+            $user_name  = isset( $sub_meta->user_name ) ? $sub_meta->user_name : '';
+            $tax_rate   = isset( $sub_meta->tax_rate ) ? (float) $sub_meta->tax_rate : 0;
+            $pack_id    = isset( $sub_meta->pack_id ) ? (int) $sub_meta->pack_id : '';
+        } else {
+            $post_meta  = $payment_intent->metadata;
+            $user_id    = ! empty( $post_meta['user_id'] ) ? (int) $post_meta['user_id'] : 0;
+            $user_email = ! empty( $post_meta['email'] ) ? $post_meta['email'] : 0;
+
+            $user_name = ! empty( $post_meta['user_name'] ) ? $post_meta['user_name'] : 0;
+
+            $tax_rate   = ! empty( $post_meta['tax_rate'] ) ? (float) $post_meta['tax_rate'] : 0;
+            $post_id    = ! empty( $post_meta['post_id'] ) ? (int) $post_meta['post_id'] : 0;
+            $pack_id    = ! empty( $post_meta['pack_id'] ) ? (int) $post_meta['pack_id'] : 0;
+        }
+
+        if ( ! $user_id ) {
+            $user = get_users(
+                [
+                    'meta_key'    => '_wpuf_stripe_customer_id',
+                    'meta_value'  => $payment_intent->customer,
+                    'number'      => 1,
+                    'count_total' => false,
+                ]
+            );
+
+            if ( empty( $user ) ) {
+                WP_User_Frontend::log( 'user not exist', 'user does not exist on database' );
+                return;
+            }
+        }
+
+        $user_id    = $user_id ? $user_id : $user[0]->ID;
+        $subtotal   = $payment_intent->amount / 100;
+        $tax_rate   = $tax_rate ? $tax_rate : get_user_meta( $user_id, '_wpuf_tax_rate', true );
+        $tax_amount = 0;
+
+        if ( $tax_rate ) {
+            $tax_amount = ( $subtotal * (float) $tax_rate ) / 100;
+        }
 
         if ( ! empty( $transaction_id ) ) {
-            $this->updateStatus( $transaction_id, 'completed' );
+            //create transaction data here
+            $data = [
+                'user_id'          => (int) $user_id,
+                'status'           => 'completed',
+                'subtotal'         => (float) $subtotal,
+                'tax'              => $tax_amount,
+                'cost'             => $subtotal - $tax_amount,
+                'post_id'          => isset( $post_id ) ? $post_id : '',
+                'pack_id'          => isset( $pack_id ) ? $pack_id : '',
+                'payer_first_name' => $user_name,
+                'payer_last_name'  => '',
+                'payer_email'      => $user_email,
+                'payment_type'     => 'Stripe',
+                'payer_address'    => $payment_intent['billing_details']['address']['country'],
+                'transaction_id'   => $transaction_id,
+                'created'          => current_time( 'mysql' ),
+            ];
+
+            WPUF_Payment::insert_payment( $data, $transaction_id, $is_recurring );
+            //            $this->updateStatus( $transaction_id, 'completed' );
         }
     }
 
@@ -698,7 +834,7 @@ class WPUF_Gateway_Stripe {
         global $wpdb;
 
         //check if it's already there
-        $sql    = $wpdb->prepare( "SELECT * FROM " . $wpdb->prefix . "wpuf_transaction WHERE transaction_id = %s LIMIT 1", $transaction_id );
+        $sql    = $wpdb->prepare( 'SELECT * FROM ' . $wpdb->prefix . 'wpuf_transaction WHERE transaction_id = %s LIMIT 1', $transaction_id );
         $result = $wpdb->get_row( $sql );
 
         $wpdb->update( $wpdb->prefix . 'wpuf_transaction', array( 'status' => $status ), array( 'transaction_id' => $transaction_id ) );
@@ -716,7 +852,6 @@ class WPUF_Gateway_Stripe {
                 }
             }
         }
-
     }
 
     /**
@@ -726,26 +861,29 @@ class WPUF_Gateway_Stripe {
      *
      * @since  0.1
      */
-    public function handle_cancel_subscription( $data, $user_id = null ) {
+    public function handle_cancel_subscription( $data ) {
         $sub_meta = 'cancel';
-
+        $user_id  = $data['user_id'];
         if ( empty( $user_id ) ) {
-            $user_id         = get_current_user_id();
-            $sub_info        = get_user_meta( $user_id, '_wpuf_subscription_pack', true );
-
-            // Cancel subscription from stripe end
-            $stripe_api_secret = wpuf_get_option( 'stripe_api_secret', 'wpuf_payment' );
-
-            \Stripe\Stripe::setApiKey( $stripe_api_secret );
-            \Stripe\Stripe::setApiVersion( "2019-05-16" );
-
-            $customer_id  = get_user_meta( $user_id, '_wpuf_stripe_customer_id', true );
-            $customer     = \Stripe\Customer::retrieve( $customer_id );
-            $subscription_id = $customer->subscriptions->data[0]->id;
-            $subscription = \Stripe\Subscription::retrieve( $subscription_id );
-            $subscription->cancel();
+            $user_id = get_current_user_id();
         }
+        $sub_info = get_user_meta( $user_id, '_wpuf_subscription_pack', true );
 
+        if ( 'yes' === $sub_info['recurring'] ) {
+            // Cancel subscription from stripe end if recurring
+            $this->configure_stripe();
+
+            $customer_id     = get_user_meta( $user_id, '_wpuf_stripe_customer_id', true );
+            $customer        = \Stripe\Customer::retrieve( $customer_id );
+            if ( ! $customer->deleted && ( isset( $customer->subscriptions ) && ! empty(
+                $customer->subscriptions->data
+            ) ) ) {
+                $subscription_id = $customer->subscriptions->data[0]->id;
+                $subscription    = \Stripe\Subscription::retrieve( $subscription_id );
+                $subscription->cancel();
+            }
+        }
+        delete_user_meta( $user_id, '_wpuf_stripe_customer_id' );
         WPUF_Subscription::init()->update_user_subscription_meta( $user_id, $sub_meta );
     }
 
@@ -758,14 +896,84 @@ class WPUF_Gateway_Stripe {
      * @return bool
      */
     public static function check_urls_same( $url1, $url2 ) {
-        $mustMatch = array_flip( [ 'host', 'port', 'path' ] );
+        $must_match = array_flip( [ 'host', 'port', 'path' ] );
         $defaults  = [ 'path' => '/' ]; // if not present, assume these
-        $url1      = array_intersect_key( parse_url( $url1 ), $mustMatch ) + $defaults;
-        $url2      = array_intersect_key( parse_url( $url2 ), $mustMatch ) + $defaults;
+        $url1      = array_intersect_key( parse_url( $url1 ), $must_match ) + $defaults;
+        $url2      = array_intersect_key( parse_url( $url2 ), $must_match ) + $defaults;
 
         return $url1 === $url2;
     }
 
+    /**
+     * Nullify price data if trail avail
+     *
+     * @since 3.4.7
+     *
+     * @param $invoice_id
+     */
+    protected function update_trial_transaction( $object ) {
+        $metadata     = $object->metadata;
+        $invoice      = ! is_null( $object->latest_invoice ) ? $object->latest_invoice : '';
+        $is_recurring = $invoice ? true : false;
+
+        $user_id    = isset( $metadata->user_id ) ? (int) $metadata->user_id : '';
+        $user_email = isset( $metadata->email ) ? $metadata->email : '';
+        $user_name  = isset( $metadata->user_name ) ? $metadata->user_name : '';
+        $tax_rate   = isset( $metadata->tax_rate ) ? (float) $metadata->tax_rate : 0;
+        $pack_id    = isset( $metadata->pack_id ) ? (int) $metadata->pack_id : '';
+
+        if ( ! $user_id ) {
+            $user = get_users(
+                [
+                    'meta_key'    => '_wpuf_stripe_customer_id',
+                    'meta_value'  => $object->customer,
+                    'number'      => 1,
+                    'count_total' => false,
+                ]
+            );
+
+            if ( empty( $user ) ) {
+                WP_User_Frontend::log( 'user not exist', 'user does not exist on database' );
+                return;
+            }
+        }
+
+        $user_id    = $user_id ? $user_id : $user[0]->ID;
+        $subtotal   = 0;
+        $tax_amount = 0;
+
+        //create transaction data here
+        $data = [
+            'user_id'          => (int) $user_id,
+            'status'           => 'completed',
+            'subtotal'         => (float) $subtotal,
+            'tax'              => $tax_amount,
+            'cost'             => $subtotal - $tax_amount,
+            'post_id'          => isset( $post_id ) ? $post_id : '',
+            'pack_id'          => isset( $pack_id ) ? $pack_id : '',
+            'payer_first_name' => $user_name,
+            'payer_last_name'  => '',
+            'payer_email'      => $user_email,
+            'payment_type'     => 'Stripe',
+            'payer_address'    => $object['billing_details']['address']['country'],
+            'transaction_id'   => $invoice,
+            'created'          => current_time( 'mysql' ),
+        ];
+
+        WPUF_Payment::insert_payment( $data, $invoice, $is_recurring );
+    }
+
+    /**
+     * Cancel if failed at user defined times
+     *
+     * @param $failed_invoice
+     */
+    public function handle_failed_payment( $failed_invoice ) {
+        $count = absint( wpuf_get_option( 'failed_retry', 'wpuf_payment' ) );
+        if ( $count === (int) $failed_invoice->attempt_count ) {
+            $this->cancelUserSubscription( $failed_invoice );
+        }
+    }
 }
 
 new WPUF_Gateway_Stripe();

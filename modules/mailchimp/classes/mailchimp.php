@@ -5,8 +5,8 @@
  *
  *  Handle API request and connect with mailchimp
  */
-class MailChimp
-{
+class MailChimp {
+
     private $api_key;
     private $api_endpoint = 'https://<dc>.api.mailchimp.com/3.0';
     private $verify_ssl   = false;
@@ -15,11 +15,10 @@ class MailChimp
      * Create a new instance
      * @param string $api_key Your MailChimp API key
      */
-    function __construct($api_key)
-    {
+    public function __construct( $api_key ) {
         $this->api_key = $api_key;
-        list(, $datacentre) = explode('-', $this->api_key);
-        $this->api_endpoint = str_replace('<dc>', $datacentre, $this->api_endpoint);
+        list(, $datacentre) = explode( '-', $this->api_key );
+        $this->api_endpoint = str_replace( '<dc>', $datacentre, $this->api_endpoint );
     }
 
     /**
@@ -28,9 +27,8 @@ class MailChimp
      * @param  array  $args   An array of arguments to pass to the method. Will be json-encoded for you.
      * @return array          Associative array of json decoded API response.
      */
-    public function call($method, $args=array())
-    {
-        return $this->makeRequest($method, $args);
+    public function call( $method, $args = array() ) {
+        return $this->makeRequest( $method, $args );
     }
 
     /**
@@ -39,43 +37,53 @@ class MailChimp
      * @param  array  $args   Assoc array of parameters to be passed
      * @return array          Assoc array of decoded result
      */
-    private function makeRequest($method, $args=array())
-    {
-        $json_data = json_encode($args);
-        $url = $this->api_endpoint.'/'.$method;
-        if ('lists' != $method) {
-            $memberId = md5(strtolower($args['email_address']));
+    private function makeRequest( $method, $args = array() ) {
+        $json_data = json_encode( $args, true );
+
+        if ( count( $args ) && 'lists' === $method ) {
+            $url = $this->api_endpoint . '/' . $method . '?' . http_build_query( $args );
+        } else {
+            $url = $this->api_endpoint . '/' . $method;
+        }
+
+        if ( 'lists' !== $method ) {
+            $member_id = md5( strtolower( $args['email_address'] ) );
             $url .= '/members/';
         }
 
-        if (function_exists('curl_init') && function_exists('curl_setopt')){
+        if ( function_exists( 'curl_init' ) && function_exists( 'curl_setopt' ) ) {
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'lists' != $method ? 'POST' : 'GET');
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_USERPWD, 'user:' . $this->api_key);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-            curl_setopt($ch, CURLOPT_USERAGENT, 'PHP-MCAPI/3.0');       
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->verify_ssl);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
-            $result = curl_exec($ch);
-            curl_close($ch);
+            curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'lists' !== $method ? 'POST' : 'GET' );
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_USERPWD, 'user:' . $this->api_key );
+            curl_setopt( $ch, CURLOPT_HTTPHEADER, array( 'Content-Type: application/json' ) );
+            curl_setopt( $ch, CURLOPT_USERAGENT, 'PHP-MCAPI/3.0' );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            curl_setopt( $ch, CURLOPT_TIMEOUT, 10 );
+            curl_setopt( $ch, CURLOPT_POST, true );
+            curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, $this->verify_ssl );
+            curl_setopt( $ch, CURLOPT_POSTFIELDS, $json_data );
+            $result = curl_exec( $ch );
+            curl_close( $ch );
+            //            WP_User_Frontend::log(print_r($result,true));
         } else {
-            $result    = file_get_contents($url, null, stream_context_create(array(
-                'http' => array(
-                    'protocol_version' => 1.1,
-                    'user_agent'       => 'PHP-MCAPI/3.0',
-                    'method'           => 'POST',
-                    'header'           => "Content-type: application/json\r\n".
-                                          "Connection: close\r\n" .
-                                          "Content-length: " . strlen($json_data) . "\r\n",
-                    'content'          => $json_data,
-                ),
-            )));
+            $result = file_get_contents(
+                $url, null, stream_context_create(
+                    array(
+                        'http' => array(
+                            'protocol_version' => 1.1,
+                            'user_agent'       => 'PHP-MCAPI/3.0',
+                            'method'           => 'POST',
+                            'header'           => "Content-type: application/json\r\n" .
+                                                  "Connection: close\r\n" .
+                                                  'Content-length: ' . strlen( $json_data ) . "\r\n",
+                            'content'          => $json_data,
+                        ),
+                    )
+                )
+            );
         }
 
-        return $result ? json_decode($result, true) : false;
+        return $result ? json_decode( $result, true ) : false;
     }
 }

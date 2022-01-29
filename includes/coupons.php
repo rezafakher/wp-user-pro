@@ -72,6 +72,14 @@ class WPUF_Coupons {
         $coupon['usage_limit'] = get_post_meta( $post_id, '_usage_limit', true );
         $coupon['access']      = get_post_meta( $post_id, '_access', true );
 
+        if ( empty( $coupon['code'] ) ) {
+            $post = get_post( $post_id );
+
+            if ( ! empty( $post->post_title ) ) {
+                $coupon['code'] = $post->post_title;
+            }
+        }
+
         return apply_filters( 'wpuf_get_coupon_meta', $coupon, $post_id );
     }
 

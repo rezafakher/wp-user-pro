@@ -89,6 +89,9 @@ class WPUF_Pro_Whats_New {
         if ( ! $this->has_new() ) {
             return;
         }
+
+        wp_enqueue_script( 'wp-util' );
+
         ?>
         <div class="notice notice-success wpuf-whats-new-notice pro">
 

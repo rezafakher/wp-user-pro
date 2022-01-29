@@ -11,7 +11,6 @@ class WPUF_New_User_Approve {
 
     /**
      * Class constructor.
-     *
      */
     public function __construct() {
         add_action( 'wpuf_profile_setting', array( $this, 'add_form_settings' ), 10, 2 );
@@ -19,7 +18,7 @@ class WPUF_New_User_Approve {
         add_filter( 'manage_users_columns', array( $this, 'new_modify_user_table' ), 10, 1 );
         add_filter( 'manage_users_custom_column', array( $this, 'new_modify_user_table_row' ), 10, 3 );
         add_filter( 'user_row_actions', array( $this, 'user_row_action_links' ), 10, 2 );
-        add_filter( 'wp_authenticate_user', array( $this, 'validate_login'), 10, 2 );
+        add_filter( 'wp_authenticate_user', array( $this, 'validate_login' ), 10, 2 );
         add_action( 'restrict_manage_users', array( $this, 'status_filter' ), 10, 1 );
         add_action( 'pre_user_query', array( $this, 'filter_by_status' ) );
         add_action( 'admin_footer-users.php', array( $this, 'admin_footer' ) );
@@ -42,7 +41,7 @@ class WPUF_New_User_Approve {
      * @return void
      */
     public function add_form_settings( $form_settings, $post ) {
-        $status_selected    = isset( $form_settings['wpuf_user_status'] ) ? $form_settings['wpuf_user_status'] : 'approved';
+        $status_selected = isset( $form_settings['wpuf_user_status'] ) ? $form_settings['wpuf_user_status'] : 'approved';
         ?>
 
         <tr>
@@ -67,7 +66,6 @@ class WPUF_New_User_Approve {
      * @return void
      */
     public function insert_user_status( $user_id, $form_id ) {
-
         $form_settings  = wpuf_get_form_settings( $form_id );
         $status         = isset( $form_settings['wpuf_user_status'] ) ? $form_settings['wpuf_user_status'] : 'approved';
         $key            = 'wpuf_user_status';
@@ -81,8 +79,7 @@ class WPUF_New_User_Approve {
      * @return void
      */
     public function update_user_status() {
-
-        $wp_list_table  = _get_list_table('WP_Users_List_Table');
+        $wp_list_table  = _get_list_table( 'WP_Users_List_Table' );
         $key            = 'wpuf_user_status';
         $user_id        = isset( $_GET['user'] ) ? $_GET['user'] : '';
         $status         = '';
@@ -101,9 +98,8 @@ class WPUF_New_User_Approve {
         }
 
         if ( update_user_meta( $user_id, $key, $status ) ) {
-            WPUF_Frontend_Form_Profile::user_email_notification( $status, $user_id );
+            WPUF_Frontend_Form_Profile::user_status_update_notification( $status, $user_id );
         }
-
     }
 
     /**
@@ -124,8 +120,8 @@ class WPUF_New_User_Approve {
     public function new_modify_user_table_row( $value, $column_name, $user_id ) {
         $this->update_user_status();
 
-        switch ($column_name) {
-            case 'status' :
+        switch ( $column_name ) {
+            case 'status':
                 return ucfirst( $this->get_user_status( $user_id ) );
                 break;
             default:
@@ -140,24 +136,23 @@ class WPUF_New_User_Approve {
      * @return array
      */
     public function user_row_action_links( $actions, $user_object ) {
-
         $user_id        = $user_object->ID;
         $user_status    = $this->get_user_status( $user_id );
 
-        $approve_user   = "<a href='" . admin_url( "users.php?action=wpuf-approve-user&amp;user=$user_id") . "'>" . __( 'Approve', 'wpuf-pro' ) . "</a>";
-        $pending_user   = "<a href='" . admin_url( "users.php?action=wpuf-pending-user&amp;user=$user_id") . "'>" . __( 'Pending', 'wpuf-pro' ) . "</a>";
-        $deny_user      = "<a href='" . admin_url( "users.php?action=wpuf-deny-user&amp;user=$user_id") . "'>" . __( 'Deny', 'wpuf-pro' ) . "</a>";
+        $approve_user   = "<a href='" . admin_url( "users.php?action=wpuf-approve-user&amp;user=$user_id" ) . "'>" . __( 'Approve', 'wpuf-pro' ) . '</a>';
+        $pending_user   = "<a href='" . admin_url( "users.php?action=wpuf-pending-user&amp;user=$user_id" ) . "'>" . __( 'Pending', 'wpuf-pro' ) . '</a>';
+        $deny_user      = "<a href='" . admin_url( "users.php?action=wpuf-deny-user&amp;user=$user_id" ) . "'>" . __( 'Deny', 'wpuf-pro' ) . '</a>';
 
-        switch ($user_status) {
-            case 'approved' :
+        switch ( $user_status ) {
+            case 'approved':
                 $actions['wpuf-deny-user']      = $deny_user;
                 $actions['wpuf-pending-user']   = $pending_user;
                 break;
-            case 'pending' :
+            case 'pending':
                 $actions['wpuf-approve-user']   = $approve_user;
                 $actions['wpuf-deny-user']      = $deny_user;
                 break;
-            case 'denied' :
+            case 'denied':
                 $actions['wpuf-approve-user']   = $approve_user;
                 $actions['wpuf-pending-user']   = $pending_user;
                 break;
@@ -201,7 +196,7 @@ class WPUF_New_User_Approve {
 
         if ( $status == 'pending' ) {
             $message = $pending_user_message;
-        } else if ( $status == 'denied' ) {
+        } elseif ( $status == 'denied' ) {
             $message = $denied_user_message;
         }
 
@@ -213,15 +208,15 @@ class WPUF_New_User_Approve {
      *
      * @return string
      */
-    public function validate_login ($user, $password) {
+    public function validate_login( $user, $password ) {
         $status = $this->get_user_status( $user->ID );
 
-        switch ($status) {
-            case 'pending' :
+        switch ( $status ) {
+            case 'pending':
                 $pending_message = $this->get_authentication_message( 'pending' );
                 $user = new WP_Error( 'wpuf_pending_user_error', $pending_message );
                 break;
-            case 'denied' :
+            case 'denied':
                 $denied_message = $this->get_authentication_message( 'denied' );
                 $user = new WP_Error( 'wpuf_denied_user_error', $denied_message );
                 break;
@@ -237,14 +232,14 @@ class WPUF_New_User_Approve {
      * @uses restrict_manage_users
      */
     public function status_filter( $which ) {
-        $id              = 'wpuf_user_approve_filter-' . $which;
+        $id = 'wpuf_user_approve_filter-' . $which;
 
         $filter_button   = submit_button( __( 'Filter Users by Status', 'wpuf-user-approve' ), 'button', 'wpuf-status-query-submit', false, array( 'id' => 'wpuf-status-query-submit' ) );
         $filtered_status = $this->selected_status();
         ?>
 
-        <label class="screen-reader-text" for="<?php echo $id ?>"><?php _e( 'View all users', 'wpuf-user-approve' ); ?></label>
-        <select id="<?php echo $id ?>" name="<?php echo $id ?>" style="float: none; margin: 0 0 0 15px;">
+        <label class="screen-reader-text" for="<?php echo $id; ?>"><?php _e( 'View all users', 'wpuf-user-approve' ); ?></label>
+        <select id="<?php echo $id; ?>" name="<?php echo $id; ?>" style="float: none; margin: 0 0 0 15px;">
             <option value=""><?php _e( 'View all users', 'new-user-approve' ); ?></option>
             <?php foreach ( $this->get_valid_statuses() as $status ) : ?>
                 <option value="<?php echo esc_attr( $status ); ?>"<?php selected( $status, $filtered_status ); ?>><?php echo esc_html( ucfirst( $status ) ); ?></option>
@@ -257,7 +252,7 @@ class WPUF_New_User_Approve {
                 margin: 0 0 0 5px;
             }
         </style>
-    <?php
+        <?php
     }
 
     /**
@@ -269,7 +264,7 @@ class WPUF_New_User_Approve {
     public function filter_by_status( $query ) {
         global $wpdb;
 
-        if ( !is_admin() && !did_action( 'admin_init' ) ) {
+        if ( ! is_admin() && ! did_action( 'admin_init' ) ) {
             return;
         }
 
@@ -298,7 +293,6 @@ class WPUF_New_User_Approve {
 
     /**
      * Selected Status
-     *
      */
     public function selected_status() {
         if ( ! empty( $_REQUEST['wpuf_user_approve_filter-top'] ) || ! empty( $_REQUEST['wpuf_user_approve_filter-bottom'] ) ) {
@@ -316,20 +310,22 @@ class WPUF_New_User_Approve {
     public function admin_footer() {
         $screen = get_current_screen();
 
-        if ( $screen->id == 'users' ) : ?>
+        if ( $screen->id == 'users' ) :
+            ?>
             <script type="text/javascript">
                 jQuery(document).ready(function ($) {
-                    $('<option>').val('approve').text('<?php _e( 'Approve', 'wpuf-pro' )?>').appendTo("select[name='action']");
-                    $('<option>').val('approve').text('<?php _e( 'Approve', 'wpuf-pro' )?>').appendTo("select[name='action2']");
+                    $('<option>').val('approve').text('<?php _e( 'Approve', 'wpuf-pro' ); ?>').appendTo("select[name='action']");
+                    $('<option>').val('approve').text('<?php _e( 'Approve', 'wpuf-pro' ); ?>').appendTo("select[name='action2']");
 
-                    $('<option>').val('pending').text('<?php _e( 'Pending', 'wpuf-pro' )?>').appendTo("select[name='action']");
-                    $('<option>').val('pending').text('<?php _e( 'Pending', 'wpuf-pro' )?>').appendTo("select[name='action2']");
+                    $('<option>').val('pending').text('<?php _e( 'Pending', 'wpuf-pro' ); ?>').appendTo("select[name='action']");
+                    $('<option>').val('pending').text('<?php _e( 'Pending', 'wpuf-pro' ); ?>').appendTo("select[name='action2']");
 
-                    $('<option>').val('deny').text('<?php _e( 'Deny', 'wpuf-pro' )?>').appendTo("select[name='action']");
-                    $('<option>').val('deny').text('<?php _e( 'Deny', 'wpuf-pro' )?>').appendTo("select[name='action2']");
+                    $('<option>').val('deny').text('<?php _e( 'Deny', 'wpuf-pro' ); ?>').appendTo("select[name='action']");
+                    $('<option>').val('deny').text('<?php _e( 'Deny', 'wpuf-pro' ); ?>').appendTo("select[name='action2']");
                 });
             </script>
-        <?php endif;
+            <?php
+        endif;
     }
 
     /**
@@ -347,7 +343,7 @@ class WPUF_New_User_Approve {
             $action = $wp_list_table->current_action();
 
             $allowed_actions = array( 'approve', 'pending', 'deny' );
-            if ( !in_array( $action, $allowed_actions ) ) {
+            if ( ! in_array( $action, $allowed_actions ) ) {
                 return;
             }
 
@@ -364,7 +360,7 @@ class WPUF_New_User_Approve {
             }
 
             $sendback = remove_query_arg( array( 'approved', 'pending', 'denied', 'deleted', 'ids', 'new_user_approve_filter', 'new_user_approve_filter2', 'pw-status-query-submit', 'new_role' ), wp_get_referer() );
-            if ( !$sendback ) {
+            if ( ! $sendback ) {
                 $sendback = admin_url( 'users.php' );
             }
 
@@ -377,36 +373,51 @@ class WPUF_New_User_Approve {
                     $approved = 0;
                     foreach ( $user_ids as $user_id ) {
                         if ( update_user_meta( $user_id, 'wpuf_user_status', 'approved' ) ) {
-                            WPUF_Frontend_Form_Profile::user_email_notification( 'approved', $user_id );
+                            WPUF_Frontend_Form_Profile::user_status_update_notification( 'approved', $user_id );
                             $approved++;
                         }
                     }
 
-                    $sendback = add_query_arg( array( 'approved' => $approved, 'ids' => join( ',', $user_ids ) ), $sendback );
+                    $sendback = add_query_arg(
+                        array(
+                            'approved' => $approved,
+                            'ids' => join( ',', $user_ids ),
+                        ), $sendback
+                    );
                     break;
 
                 case 'pending':
                     $pending = 0;
                     foreach ( $user_ids as $user_id ) {
                         if ( update_user_meta( $user_id, 'wpuf_user_status', 'pending' ) ) {
-                            WPUF_Frontend_Form_Profile::user_email_notification( 'pending', $user_id );
+                            WPUF_Frontend_Form_Profile::user_status_update_notification( 'pending', $user_id );
                             $pending++;
                         }
                     }
 
-                    $sendback = add_query_arg( array( 'pending' => $pending, 'ids' => join( ',', $user_ids ) ), $sendback );
+                    $sendback = add_query_arg(
+                        array(
+                            'pending' => $pending,
+                            'ids' => join( ',', $user_ids ),
+                        ), $sendback
+                    );
                     break;
 
                 case 'deny':
                     $denied = 0;
                     foreach ( $user_ids as $user_id ) {
                         if ( update_user_meta( $user_id, 'wpuf_user_status', 'denied' ) ) {
-                            WPUF_Frontend_Form_Profile::user_email_notification( 'denied', $user_id );
+                            WPUF_Frontend_Form_Profile::user_status_update_notification( 'denied', $user_id );
                             $denied++;
                         }
                     }
 
-                    $sendback = add_query_arg( array( 'denied' => $denied, 'ids' => join( ',', $user_ids ) ), $sendback );
+                    $sendback = add_query_arg(
+                        array(
+                            'denied' => $denied,
+                            'ids' => join( ',', $user_ids ),
+                        ), $sendback
+                    );
                     break;
 
                 default:
@@ -421,7 +432,6 @@ class WPUF_New_User_Approve {
     }
 
     public function add_global_settings( $settings_fields ) {
-
         $settings_fields['wpuf_mails'][] = array(
             'name'    => 'pending_user_email',
             'label'   => __( '<span class="dashicons dashicons-groups"></span> Pending User Email', 'wpuf-pro' ),
@@ -430,12 +440,21 @@ class WPUF_New_User_Approve {
         );
 
         $settings_fields['wpuf_mails'][] = array(
+            'name'     => 'enable_pending_user_email_notification',
+            'label'    => __( 'Pending User Email Notification', 'wpuf-pro' ),
+            'desc'     => __( 'Enable email notification for pending user', 'wpuf-pro' ),
+            'default'  => 'on',
+            'type'     => 'checkbox',
+            'class'    => 'pending-user-email-option',
+        );
+
+        $settings_fields['wpuf_mails'][] = array(
             'name'     => 'pending_user_email_subject',
             'label'    => __( 'Pending Email Subject for User', 'wpuf-pro' ),
             'desc'     => __( 'This sets the subject of the emails sent to newly registered user.', 'wpuf-pro' ),
             'default'  => 'Status has been changed to pending',
             'type'     => 'text',
-            'class'   => 'pending-user-email-option',
+            'class'    => 'pending-user-email-option',
         );
 
         $settings_fields['wpuf_mails'][] = array(
@@ -459,12 +478,21 @@ class WPUF_New_User_Approve {
         );
 
         $settings_fields['wpuf_mails'][] = array(
+            'name'     => 'enable_denied_user_email_notification',
+            'label'    => __( 'Denied User Email Notification', 'wpuf-pro' ),
+            'desc'     => __( 'Enable email notification for denied user', 'wpuf-pro' ),
+            'default'  => 'on',
+            'type'     => 'checkbox',
+            'class'    => 'denied-user-email-option',
+        );
+
+        $settings_fields['wpuf_mails'][] = array(
             'name'     => 'denied_user_email_subject',
             'label'    => __( 'Denied Email Subject for User', 'wpuf-pro' ),
             'desc'     => __( 'This sets the subject of the emails sent to denied user.', 'wpuf-pro' ),
             'default'  => 'Denied your request',
             'type'     => 'text',
-            'class'    => 'denied-user-email-option'
+            'class'    => 'denied-user-email-option',
         );
 
         $settings_fields['wpuf_mails'][] = array(
@@ -477,7 +505,7 @@ class WPUF_New_User_Approve {
 
             Thanks',
             'type'     => 'wysiwyg',
-            'class'    => 'denied-user-email-option'
+            'class'    => 'denied-user-email-option',
         );
 
         $settings_fields['wpuf_mails'][] = array(
@@ -488,12 +516,21 @@ class WPUF_New_User_Approve {
         );
 
         $settings_fields['wpuf_mails'][] = array(
+            'name'     => 'enable_approved_user_email_notification',
+            'label'    => __( 'Approved User Email Notification', 'wpuf-pro' ),
+            'desc'     => __( 'Enable email notification for approved user', 'wpuf-pro' ),
+            'default'  => 'on',
+            'type'     => 'checkbox',
+            'class'    => 'approved-user-email-option',
+        );
+
+        $settings_fields['wpuf_mails'][] = array(
             'name'     => 'approved_user_email_subject',
             'label'    => __( 'Approved Email Subject for User', 'wpuf-pro' ),
             'desc'     => __( 'This sets the subject of the emails sent to approved user.', 'wpuf-pro' ),
             'default'  => 'Approved your request',
             'type'     => 'text',
-            'class'   => 'approved-user-email-option',
+            'class'    => 'approved-user-email-option',
         );
 
         $settings_fields['wpuf_mails'][] = array(
@@ -506,7 +543,7 @@ class WPUF_New_User_Approve {
 
             Thanks',
             'type'     => 'wysiwyg',
-            'class'   => 'approved-user-email-option',
+            'class'    => 'approved-user-email-option',
         );
 
         $settings_fields['wpuf_profile'][] = array(

@@ -47,6 +47,7 @@ class WPUF_Form_Field_Username extends WPUF_Field_Contract {
                     placeholder="<?php echo esc_attr( $field_settings['placeholder'] ); ?>"
                     value="<?php echo esc_attr( $value ) ?>"
                     size="<?php echo esc_attr( $field_settings['size'] ) ?>"
+                    <?php echo ! empty( $value ) ? 'disabled' : '' ?>
                 />
 
                 <span class="wpuf-wordlimit-message wpuf-help"></span>

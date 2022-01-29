@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: HTML Email Templates
-Plugin URI: http://wedevs.com/
+Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/html-email-templates/
 Thumbnail Name: email-templates.png
 Description: Send Email Notifications with HTML Template
 Version: 1.0

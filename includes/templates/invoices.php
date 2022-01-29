@@ -12,7 +12,7 @@
         $user_id = get_current_user_id();
         $sql = $wpdb->prepare( "SELECT transaction_id
             FROM " . $wpdb->prefix . "wpuf_transaction
-            WHERE user_id = %s", $user_id );
+            WHERE user_id = %s ORDER BY id DESC", $user_id );
 
         $results = $wpdb->get_results( $sql );
 
@@ -25,7 +25,7 @@
                 </td>
                 <td>
                     <?php $var =  get_user_meta ( $user_id, '_invoice_link' . $t_id['transaction_id'], true );  ?>
-                    <a href="<?php echo $var ?>"><?php _e( 'Download', 'wpuf-pro' ); ?></a>
+                    <a href="<?php echo $var ?>" download><?php _e( 'Download', 'wpuf-pro' ); ?></a>
 
                 </td>
                 </tr>

@@ -1,7 +1,7 @@
 <?php
 /*
   Plugin Name: Comments Manager
-  Plugin URI: http://wedevs.com
+  Plugin URI: https://wedevs.com/wp-user-frontend-pro/modules/comments-manager/
   Thumbnail Name: wpuf-comment.png
   Description: Handle comments in frontend
   Version: 0.1

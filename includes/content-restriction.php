@@ -249,36 +249,39 @@ class WPUF_Content_Restriction {
     }
 
     /**
-     * Filter the content and put restriction based on the type
+     * Return the page content or error message
+     * based on page restrictions and user roles
      *
      * @param  string $type
      * @param  string $content
      * @param  array  $allowed_packs
+     * @param  array  $allowed_roles
      *
      * @return string
      */
     public function content_filter( $type, $content, $allowed_packs = array(), $allowed_roles = array() ) {
-
         $errors = $this->get_restriction_errors();
 
-        if ( 'loggedin' == $type && !is_user_logged_in() ) {
+        // restriction selected but user is not logged in
+        if ( ( 'loggedin' === $type || 'subscription' === $type )
+            && ! is_user_logged_in() ) {
             return $this->wrap_error( $errors['login'] );
         }
 
-        if ( 'subscription' == $type ) {
+        // no specific packs or roles restriction selected
+        // or the visitor is admin
+        // so display the content
+        if ( ( empty( $allowed_packs ) && empty( $allowed_roles ) )
+            || current_user_can( 'manage_options' ) ) {
+            return $content;
+        }
 
-            if ( !is_user_logged_in() ) {
-                return $this->wrap_error( $errors['login'] );
-            }
+        $current_user_id = get_current_user_id();
 
-            // respect the admins?
-            if ( current_user_can( 'manage_options' ) ) {
-                return $content;
-            }
+        if ( 'subscription' === $type ) {
+            $sub_pack = WPUF_Subscription::get_user_pack( $current_user_id );
 
-            $sub_pack = WPUF_Subscription::get_user_pack( get_current_user_id() );
-
-            if ( !$sub_pack ) {
+            if ( ! $sub_pack ) {
                 return $this->wrap_error( $errors['sub_limit'] );
             }
 
@@ -288,26 +291,21 @@ class WPUF_Content_Restriction {
 
             $pack_id = is_array( $sub_pack ) ? intval( $sub_pack['pack_id'] ) : 0;
 
-            if ( ! in_array( $pack_id, $allowed_packs ) ) {
+            if ( ! in_array( $pack_id, $allowed_packs, true ) ) {
                 return $this->wrap_error( $errors['sub_limit'] );
             }
-
         }
 
-        if ( 'loggedin' == $type ) {
-            $current_user_info = get_userdata( get_current_user_id() );
-            $current_user_roles = $current_user_info->roles;
-
-            foreach ($current_user_roles as $role) {
-                if ( in_array( $role, $allowed_roles ) ) {
+        if ( 'loggedin' === $type ) {
+            $user_exist = false;
+            foreach ( $allowed_roles as $role ) {
+                if ( current_user_can( $role ) ) {
                     $user_exist = true;
                     break;
-                }else{
-                    $user_exist = false;
                 }
             }
 
-            if ( !$user_exist ) {
+            if ( ! $user_exist ) {
                 return $this->wrap_error( $errors['role'] );
             }
         }

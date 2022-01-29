@@ -11,6 +11,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
     public $normal_timezone;
     private $start_meta_key;
     private $end_meta_key;
+    const FORMAT = 'Y-m-d H:i:s';
 
     public function __construct() {
         parent::__construct();
@@ -46,7 +47,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'size'            => '',
                 'placeholder'     => __( 'Please enter your event title', 'wpuf-pro' ),
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'textarea',
@@ -62,7 +63,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'rich'            => 'yes',
                 'insert_image'    => 'yes',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'image_upload',
@@ -76,7 +77,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'help'            => __( 'Upload the main image of your event', 'wpuf-pro' ),
                 'max_size'        => '1024',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'taxonomy',
@@ -93,7 +94,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'order'           => 'ASC',
                 'exclude'         => array(),
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'textarea',
@@ -109,7 +110,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'cols'            => '25',
                 'rich'            => 'no',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'text',
@@ -123,7 +124,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'help'            => __( 'Separate tags with commas.', 'wpuf-pro' ),
                 'size'            => '40',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'section_break',
@@ -131,7 +132,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'label'           => __( 'TIME & DATE', 'wpuf-pro' ),
                 'description'     => '',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'date',
@@ -145,7 +146,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'format'          => 'yy-mm-dd',
                 'time'            => 'yes',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'date',
@@ -159,7 +160,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'format'          => 'yy-mm-dd',
                 'time'            => 'yes',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'radio',
@@ -170,11 +171,11 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'is_meta'         => 'yes',
                 'inline'          => 'yes',
                 'options'         => array(
-                'yes'             => 'Yes',
-                'no'              => 'No',
-                ) ,
+                    'yes'             => 'Yes',
+                    'no'              => 'No',
+                ),
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'section_break',
@@ -183,7 +184,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'wpuf_cond'       => $this->conditionals,
                 'description'     => '',
                 'name'            => 'undefined_copy',
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'radio',
@@ -195,11 +196,11 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'selected'        => 'find_a_venue',
                 'inline'          => 'yes',
                 'options'         => array(
-                'find_a_venue'    => __( 'Find a Venue', 'wpuf-pro' ),
-                'create'          => __( 'Create', 'wpuf-pro' ),
+                    'find_a_venue'    => __( 'Find a Venue', 'wpuf-pro' ),
+                    'create'          => __( 'Create', 'wpuf-pro' ),
                 ),
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'select',
@@ -223,7 +224,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'  => 'text',
@@ -239,16 +240,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field'       => array(
                         0 => 'venue',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'address',
@@ -262,13 +263,13 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'venue',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
                 'address_desc' => '',
@@ -280,7 +281,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                         'label' => __( 'Address', 'wpuf-pro' ),
                         'value' => '',
                         'placeholder' => '',
-                    ) ,
+                    ),
                     'street_address2' => array(
                         'checked' => '',
                         'type' => 'text',
@@ -288,7 +289,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                         'label' => __( 'Address Line 2', 'wpuf-pro' ),
                         'value' => '',
                         'placeholder' => '',
-                    ) ,
+                    ),
                     'city_name' => array(
                         'checked' => 'checked',
                         'type' => 'text',
@@ -296,7 +297,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                         'label' => __( 'City', 'wpuf-pro' ),
                         'value' => '',
                         'placeholder' => '',
-                    ) ,
+                    ),
                     'state' => array(
                         'checked' => 'checked',
                         'type' => 'text',
@@ -304,7 +305,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                         'label' => __( 'State', 'wpuf-pro' ),
                         'value' => '',
                         'placeholder' => '',
-                    ) ,
+                    ),
                     'zip' => array(
                         'checked' => 'checked',
                         'type' => 'text',
@@ -312,7 +313,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                         'label' => __( 'Postal Code', 'wpuf-pro' ),
                         'value' => '',
                         'placeholder' => '',
-                    ) ,
+                    ),
                     'country_select' => array(
                         'checked' => 'checked',
                         'type' => 'select',
@@ -320,11 +321,11 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                         'label' => __( 'Country', 'wpuf-pro' ),
                         'value' => '',
                         'country_list_visibility_opt_name' => 'all',
-                        'country_select_hide_list' => array() ,
-                        'country_select_show_list' => array() ,
-                    ) ,
+                        'country_select_hide_list' => array(),
+                        'country_select_show_list' => array(),
+                    ),
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'numeric_text',
@@ -345,16 +346,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'venue',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'url',
@@ -372,16 +373,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'venue',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'checkbox',
@@ -398,16 +399,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'venue',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'yes',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'checkbox',
@@ -424,16 +425,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'venue',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'yes',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'section_break',
@@ -441,7 +442,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'label'           => __( 'ORGANIZERS', 'wpuf-pro' ),
                 'description'     => '',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'radio',
@@ -457,7 +458,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'create'         => 'Create',
                 ),
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type' => 'select',
@@ -481,7 +482,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'  => 'text',
@@ -497,16 +498,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'organizer',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'numeric_text',
@@ -527,16 +528,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'organizer',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'  => 'url',
@@ -554,16 +555,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'organizer',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'  => 'email',
@@ -580,16 +581,16 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     'condition_status' => 'yes',
                     'cond_field' => array(
                         0 => 'organizer',
-                    ) ,
+                    ),
                     'cond_operator' => array(
                         0 => '=',
-                    ) ,
+                    ),
                     'cond_option' => array(
                         0 => 'create',
-                    ) ,
+                    ),
                     'cond_logic' => 'all',
                 ),
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'section_break',
@@ -597,7 +598,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'label'           => __( 'EVENT WEBSITE', 'wpuf-pro' ),
                 'description'     => '',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'url',
@@ -611,7 +612,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'width'           => 'large',
                 'size'            => 40,
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'section_break',
@@ -619,7 +620,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'label'           => __( 'EVENT COST', 'wpuf-pro' ),
                 'description'     => '',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'text',
@@ -632,7 +633,7 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'placeholder'     => '',
                 'size'            => '',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
             array(
                 'input_type'      => 'text',
@@ -646,11 +647,11 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                 'size'            => '',
                 'help'            => 'Enter a 0 for events that are free or leave blank to hide the field.',
                 'wpuf_cond'       => $this->conditionals,
-                'wpuf_visibility' => $this->get_default_visibility_prop()
+                'wpuf_visibility' => $this->get_default_visibility_prop(),
             ),
         );
 
-        $this->form_settings = array (
+        $this->form_settings = array(
             'post_type'                  => 'tribe_events',
             'post_status'                => 'publish',
             'default_cat'                => '-1',
@@ -666,9 +667,9 @@ class WPUF_Post_Form_Template_Events_Calendar extends WPUF_Post_Form_Template {
                     array(
                         'name'             => '',
                         'operator'         => '=',
-                        'option'           => ''
-                    )
-                )
+                        'option'           => '',
+                    ),
+                ),
             ),
             'edit_post_status'           => 'publish',
             'edit_redirect_to'           => 'same',
@@ -703,8 +704,8 @@ Short Description: %post_excerpt%
 Author: %author%
 Post URL: %permalink%
 Edit URL: %editlink%',
-                ),
-            );
+            ),
+        );
     }
 
     /**
@@ -743,14 +744,18 @@ Edit URL: %editlink%',
      * @return void
      */
     public function handle_form_updates( $post_id, $form_id, $form_settings ) {
-        $data = isset( $_POST ) ? $_POST : '';
+        $data = isset( $_REQUEST ) ? $_REQUEST : '';
 
-        if ( isset( $data['venue'] ) && $data['venue'] == 'create' ) {
-            $this->create_venue($data, $post_id);
+        if ( isset( $data['venue'] ) && $data['venue'] === 'create' ) {
+            $this->create_venue( $data, $post_id );
         }
 
-        if ( isset( $data['organizer'] ) && $data['organizer'] == 'create' ) {
-            $this->create_organizer($data, $post_id);
+        if ( isset( $data['organizer'] ) && $data['organizer'] === 'create' ) {
+            $this->create_organizer( $data, $post_id );
+        }
+        //Handle date issues in line with tribes
+        if ( isset( $data['_EventStartDate'] ) || isset( $data['_EventEndDate'] ) ) {
+            $this->handle_date_issues( $data, $post_id );
         }
     }
 
@@ -794,7 +799,7 @@ Edit URL: %editlink%',
                 '_VenuePhone'           => $venue_phone,
                 '_VenueURL'             => $venue_url,
                 '_VenueShowMap'         => $venue_show_map,
-                '_VenueShowMapLink'     => $venue_map_link
+                '_VenueShowMapLink'     => $venue_map_link,
             ),
         );
 
@@ -831,5 +836,51 @@ Edit URL: %editlink%',
         $organizer_id = wp_insert_post( $postarr );
 
         update_post_meta( $post_id, '_EventOrganizerID', $organizer_id );
+    }
+
+    /**
+     * Update time related meta data
+     *
+     * @param $post_data
+     * @param $post_id
+     *
+     * @since 3.4.7
+     */
+    public function handle_date_issues( $post_data, $post_id ) {
+        $start_date     = new DateTimeImmutable( $post_data['_EventStartDate'] );
+        $end_date       = new DateTimeImmutable( $post_data['_EventEndDate'] );
+        $start_date_utc = new DateTimeImmutable( $post_data['_EventStartDate'], new DateTimeZone( 'UTC' ) );
+        $end_date_utc   = new DateTimeImmutable( $post_data['_EventEndDate'], new DateTimeZone( 'UTC' ) );
+
+        $meta_to_update = [];
+        $meta_to_delete = [];
+
+        if ( 'yes' === $post_data['_EventAllDay'] ) {
+            $p1d            = new DateInterval( 'PT23H59M59S' );
+            $new_start_date = $start_date->format( self::FORMAT );
+            $new_end_date   = $start_date->add( $p1d )->format( self::FORMAT );
+
+            $meta_to_update['_EventAllDay']       = $post_data['_EventAllDay'];
+            $meta_to_update['_EventStartDate']    = $new_start_date;
+            $meta_to_update['_EventEndDate']      = $new_end_date;
+            $meta_to_update['_EventStartDateUTC'] = $start_date_utc->format( self::FORMAT );
+            $meta_to_update['_EventEndDateUTC']   = $start_date_utc->add( $p1d )->format( self::FORMAT );
+        } else {
+            $meta_to_delete[] = '_EventAllDay';
+
+            $meta_to_update['_EventStartDate'] = $start_date->format( self::FORMAT );
+            $meta_to_update['_EventEndDate'] = $end_date->format( self::FORMAT );
+            $meta_to_update['_EventStartDateUTC'] = $start_date_utc->format( self::FORMAT );
+            $meta_to_update['_EventEndDateUTC'] = $end_date_utc->format( self::FORMAT );
+            $meta_to_update['_EventDuration'] = $end_date->getTimestamp() - $start_date->getTimestamp();
+        }
+
+        foreach ( $meta_to_update as $meta_key => $meta_value ) {
+            update_post_meta( $post_id, $meta_key, $meta_value );
+        }
+
+        foreach ( $meta_to_delete as $meta_key ) {
+            delete_post_meta( $post_id, $meta_key );
+        }
     }
 }

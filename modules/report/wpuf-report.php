@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Reports
-Plugin URI: https://wedevs.com/wp-user-frontend-pro/
+Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/reports/
 Thumbnail Name: reports.png
 Description: Show various reports in WP User Frontend menu
 Version: 1.0

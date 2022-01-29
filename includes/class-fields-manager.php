@@ -55,6 +55,7 @@ class WPUF_Pro_Fields_Manager {
             require_once dirname( __FILE__ ) . '/fields/class-field-user-email.php';
             require_once dirname( __FILE__ ) . '/fields/class-field-user-url.php';
             require_once dirname( __FILE__ ) . '/fields/class-field-username.php';
+            require_once dirname( __FILE__ ) . '/fields/class-field-math-captcha.php';
 
             $fields['user_login']            = new WPUF_Form_Field_Username();
             $fields['first_name']            = new WPUF_Form_Field_First_Name();
@@ -80,6 +81,7 @@ class WPUF_Pro_Fields_Manager {
             $fields['step_start']            = new WPUF_Form_Field_Step();
             $fields['embed']                 = new WPUF_Form_Field_Embed();
             $fields['really_simple_captcha'] = new WPUF_Form_Field_really_simple_captcha();
+            $fields['math_captcha']          = new WPUF_Form_Field_Math_Captcha();
         }
 
         return $fields;
@@ -108,7 +110,7 @@ class WPUF_Pro_Fields_Manager {
      */
     public function add_to_others_fields( $fields ) {
         $pro_fields = array(
-            'shortcode', 'action_hook', 'toc', 'ratings','really_simple_captcha'
+            'shortcode', 'action_hook', 'toc', 'ratings','really_simple_captcha', 'math_captcha'
         );
 
         return array_merge( $fields, $pro_fields );

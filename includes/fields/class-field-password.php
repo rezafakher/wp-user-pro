@@ -6,8 +6,8 @@
  **/
 class WPUF_Form_Field_Password extends WPUF_Field_Contract {
 
-	function __construct() {
-        $this->name       = __('Password', 'wpuf-pro' );
+	public function __construct() {
+        $this->name       = __( 'Password', 'wpuf-pro' );
         $this->input_type = 'password';
         $this->icon       = 'lock';
     }
@@ -23,9 +23,10 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
      * @return void
      */
     public function render( $field_settings, $form_id, $type = 'post', $post_id = null ) {
-        $value         = $field_settings['default'];
-        $repeat_pass   = ( $field_settings['repeat_pass'] == 'yes' ) ? true : false;
-        $pass_strength = ( $field_settings['pass_strength'] == 'yes' ) ? true : false;
+        $value                      = $field_settings['default'];
+        $repeat_pass                = ( $field_settings['repeat_pass'] === 'yes' ) ? true : false;
+        $pass_strength              = ( $field_settings['pass_strength'] === 'yes' ) ? true : false;
+        $field_settings['required'] = is_user_logged_in() ? '' : $field_settings['required'];
 
         ?>
 
@@ -34,14 +35,14 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
 
             <div class="wpuf-fields">
                 <input
-                    class="password <?php echo ' wpuf_'.$field_settings['name'].'_'.$form_id; ?>"
-                    id="<?php echo $field_settings['name'].'_'.$form_id .'_1'; ?>"
+                    class="password <?php echo ' wpuf_' . $field_settings['name'] . '_' . $form_id; ?>"
+                    id="<?php echo $field_settings['name'] . '_' . $form_id . '_1'; ?>"
                     type="password"
-                    data-required="<?php echo $field_settings['required'] ?>"
+                    data-required="<?php echo $field_settings['required']; ?>"
                     data-type="password"
                     placeholder="<?php echo esc_attr( $field_settings['placeholder'] ); ?>"
                     value=""
-                    size="<?php echo esc_attr( $field_settings['size'] ) ?>"
+                    size="<?php echo esc_attr( $field_settings['size'] ); ?>"
                     name="pass1"
                 />
 
@@ -50,7 +51,7 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
             </div>
         </li>
 
-        <?php  if ( $repeat_pass ) { ?>
+        <?php if ( $repeat_pass ) { ?>
 
             <?php
                 $confirm_pass_field_settings          = $field_settings;
@@ -65,41 +66,42 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
 
                 <div class="wpuf-fields">
                     <input
-                        id="<?php echo $field_settings['name'].'_'.$form_id .'_2'; ?>"
-                        class="password <?php echo ' wpuf_'.$field_settings['name'].'_'.$form_id; ?>"
+                        id="<?php echo $field_settings['name'] . '_' . $form_id . '_2'; ?>"
+                        class="password <?php echo ' wpuf_' . $field_settings['name'] . '_' . $form_id; ?>"
                         type="password"
-                        data-required="<?php echo $field_settings['required'] ?>"
+                        data-required="<?php echo $field_settings['required']; ?>"
                         data-type="confirm_password" name="pass2"
                         placeholder="<?php echo esc_attr( $field_settings['placeholder'] ); ?>"
                         value=""
-                        size="<?php echo esc_attr( $field_settings['size'] ) ?>"
+                        size="<?php echo esc_attr( $field_settings['size'] ); ?>"
                     />
 
                     <span class="wpuf-wordlimit-message wpuf-help"></span>
-                    <?php  $this->help_text( $field_settings ); ?>
+                    <?php $this->help_text( $field_settings ); ?>
                 </div>
             </li>
 
-            <?php }
+            <?php
+		}
 
-            if ( $pass_strength ) {
-                wp_enqueue_script( 'zxcvbn' );
-                wp_enqueue_script( 'password-strength-meter' );
+		if ( $pass_strength ) {
+			wp_enqueue_script( 'zxcvbn' );
+			wp_enqueue_script( 'password-strength-meter' );
 
-                ?>
+			?>
 
                 <li>
                     <div class="wpuf-label">&nbsp;</div>
                     <div class="wpuf-fields">
-                        <div class="pass-strength-result" id="pass-strength-result_<?php echo $form_id; ?>" style="display: block"><?php _e( 'Strength indicator', 'wp-user-frontend' ); ?></div>
+                        <div class="pass-strength-result" id="pass-strength-result_<?php echo $form_id; ?>" style="display: block"><?php esc_html_e( 'Strength indicator', 'wpuf-pro' ); ?></div>
                     </div>
                 </li>
 
                 <script type="text/javascript">
                     jQuery(function($) {
                         function check_pass_strength() {
-                            var pass1 = $("#<?php echo $field_settings['name'].'_'.$form_id .'_1'; ?>").val(),
-                                pass2 = $("#<?php echo $field_settings['name'].'_'.$form_id .'_2'; ?>").val(),
+                            var pass1 = $("#<?php echo $field_settings['name'] . '_' . $form_id . '_1'; ?>").val(),
+                                pass2 = $("#<?php echo $field_settings['name'] . '_' . $form_id . '_2'; ?>").val(),
                                 strength;
 
                             if ( typeof pass2 === undefined ) {
@@ -132,12 +134,13 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
                             }
                         }
 
-                        $("#<?php echo $field_settings['name'].'_'.$form_id .'_1'; ?>").val('').keyup(check_pass_strength);
-                        $("#<?php echo $field_settings['name'].'_'.$form_id .'_2'; ?>").val('').keyup(check_pass_strength);
+                        $("#<?php echo $field_settings['name'] . '_' . $form_id . '_1'; ?>").val('').keyup(check_pass_strength);
+                        $("#<?php echo $field_settings['name'] . '_' . $form_id . '_2'; ?>").val('').keyup(check_pass_strength);
                         $("#pass-strength-result_<?php echo $form_id; ?>").show();
                     });
                 </script>
-            <?php }
+            <?php
+		}
     }
 
     /**
@@ -149,13 +152,13 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
         return true;
     }
 
-   /**
-    * Get field options setting
-    *
-    * @return array
-    **/
+	/**
+	 * Get field options setting
+	 *
+	 * @return array
+	 **/
     public function get_options_settings() {
-        $default_options      = $this->get_default_option_settings( false, array('dynamic') );
+        $default_options      = $this->get_default_option_settings( false, array( 'dynamic' ) );
         $default_text_options = $this->get_default_text_option_settings( true );
 
         $settings = array(
@@ -198,7 +201,7 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
 
         );
 
-        return  array_merge( $default_options, $default_text_options,$settings);
+        return array_merge( $default_options, $default_text_options, $settings );
     }
 
     /**
@@ -209,7 +212,7 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
     public function get_field_props() {
         $defaults = $this->default_attributes();
 
-        $props    = array(
+        $props = array(
             'input_type'    => 'password',
             'name'          => 'password',
             'required'      => 'yes',
@@ -234,7 +237,8 @@ class WPUF_Form_Field_Password extends WPUF_Field_Contract {
      * @return mixed
      */
     public function prepare_entry( $field ) {
-       return sanitize_text_field(trim( $_POST[$field['name']]));
+        $field_name = isset( $_REQUEST[ $field['name'] ] ) ? trim( sanitize_text_field( wp_unslash( $_REQUEST[ $field['name'] ] ) ) ) : '';
+		return $field_name;
     }
 
 }

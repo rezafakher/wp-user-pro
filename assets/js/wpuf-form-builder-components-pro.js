@@ -621,6 +621,14 @@ Vue.component('field-gmap-set-position', {
     }
 });
 
+Vue.component('field-math-captcha', {
+    template: '#tmpl-wpuf-field-math-captcha',
+
+    mixins: [
+        wpuf_mixins.option_field_mixin
+    ],
+})
+
 Vue.component('field-repeater-columns', {
     template: '#tmpl-wpuf-field-repeater-columns',
 
@@ -855,6 +863,10 @@ Vue.component('form-google_map', {
 
     /* global google */
     mounted: function () {
+        if (typeof window.google === 'undefined') {
+            return;
+        }
+
         var self = this,
             default_pos = self.field.default_pos,
             default_zoom = self.field.zoom;
@@ -936,6 +948,30 @@ Vue.component('form-last_name', {
     mixins: [
         wpuf_mixins.form_field_mixin
     ]
+});
+
+/**
+ * Field template: Math Captcha
+ */
+Vue.component('form-math_captcha', {
+    template: '#tmpl-wpuf-form-math_captcha',
+
+    mixins: [
+        wpuf_mixins.form_field_mixin
+    ],
+
+    computed: {
+        captcha: () => {
+            let operators = [ '+', '-', 'x' ],
+                random = Math.floor( Math.random() * operators.length );
+
+            return {
+                operandOne: Math.floor( Math.random() * 200 ) + 1,
+                operandTwo: Math.floor( Math.random() * 200 ) + 1,
+                operator: operators[random]
+            }  
+        }
+    },
 });
 
 /**

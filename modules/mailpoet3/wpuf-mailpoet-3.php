@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Mailpoet 3
-Plugin URI: https://wedevs.com/wp-user-frontend-pro/
+Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/mailpoet3/
 Thumbnail Name: mailpoet3.png
 Description: Add subscribers to mailpoet mailing list when they registers via WP User Frontend Pro
 Version: 1.0
@@ -108,7 +108,7 @@ class WPUF_Mailpoet_3 {
         );
 
         try {
-            $subscriber = \MailPoet\API\API::MP('v1')->subscribeToList( $user->user_email, $form_settings['mailpoet_3_list'] ); 
+            $subscriber = \MailPoet\API\API::MP('v1')->subscribeToList( $user->user_email, $form_settings['mailpoet_3_list'] );
         } catch ( Exception $exception ) {
             return $exception->getMessage();
         }

@@ -114,7 +114,7 @@ class WPUF_Admin_Form_Builder_Pro {
      * @return array
      */
     public function localize_script( $data ) {
-        if ( empty( $data['form_settings']['submit_button_cond'] ) ) {
+        if ( ! array_key_exists( 'form_settings', $data ) && ! array_key_exists( 'submit_button_cond', $data['form_settings'] ) ) {
             $data['form_settings']['submit_button_cond'] = array(
                 'condition_status' => 'no',
                 'cond_logic'       => 'any',

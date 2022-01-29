@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Social Login & Registration
-Plugin URI: http://wedevs.com/plugin/wp-user-frontend-pro/
+Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/social-login-registration/
 Thumbnail Name: Social-Media-Login.png
 Description: Add Social Login and registration feature in WP User Frontend
 Version: 1.1
@@ -52,9 +52,12 @@ use Hybridauth\Hybridauth;
 use Hybridauth\HttpClient;
 use Hybridauth\Storage\Session;
 
-Class WPUF_Social_Login {
+class WPUF_Social_Login {
 
-    private $callback;
+    private $account_page_url = null;
+    private $access_token;
+    private $form_id;
+    private $provider;
     private $config;
 
     /**
@@ -75,8 +78,8 @@ Class WPUF_Social_Login {
             }
         }
 
-        $this->callback = site_url() . '/account/';
-
+        add_action( 'setup_theme', array( $this, 'set_account_page_url' ) );
+        add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
         add_filter( 'wpuf_settings_sections', array( $this, 'wpuf_social_settings_tab' ) );
         add_filter( 'wpuf_settings_fields', array( $this, 'wpuf_pro_social_api_fields' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ), 9 );
@@ -88,12 +91,6 @@ Class WPUF_Social_Login {
         add_action( 'wpuf_login_form_bottom', array( $this, 'render_social_logins' ) );
         add_action( 'wpuf_reg_form_bottom', array( $this, 'render_social_logins' ) );
         add_action( 'wpuf_add_profile_form_bottom', array( $this, 'render_social_logins' ) );
-
-        $this->config = $this->get_providers_config();
-
-        if ( 'on' != wpuf_get_option( 'enabled', 'wpuf_social_api' ) ) {
-            return;
-        }
     }
 
     /**
@@ -101,7 +98,6 @@ Class WPUF_Social_Login {
      *
      * @return object
      * @since 2.6
-     *
      */
     public static function init() {
         static $instance = false;
@@ -129,15 +125,48 @@ Class WPUF_Social_Login {
     }
 
     /**
+     * Set account page URL
+     *
+     * @since 3.3.0
+     *
+     * @return void
+     */
+    public function set_account_page_url() {
+        $account_page_id = wpuf_get_option( 'account_page', 'wpuf_my_account', 0 );
+
+        if ( ! empty( $account_page_id ) ) {
+            $this->account_page_url = get_permalink( $account_page_id );
+            $this->config           = $this->get_providers_config();
+        }
+    }
+
+    /**
+     * Show admin notice if account page is not set in settings
+     *
+     * @since 3.3.0
+     *
+     * @return void
+     */
+    public function show_admin_notice() {
+        if ( empty( $this->account_page_url ) ) {
+            ?>
+                <div class="error">
+                    <p><?php esc_html_e( 'To use WPUF Social Login module, please set your account page in My Account > Account Page settings first.', 'wpuf-pro' ); ?></p>
+                </div>
+            <?php
+        }
+    }
+
+    /**
      * Register all scripts
      *
      * @return void
      **/
-    function enqueue_scripts() {
+    public function enqueue_scripts() {
         // register styles
-        wp_enqueue_style( 'wpuf-social-style', WPUF_PRO_ASSET_URI . '/css/jssocials.css' );
+        wp_enqueue_style( 'wpuf-social-style', WPUF_PRO_ASSET_URI . '/css/jssocials.css', '', WPUF_VERSION );
         // enqueue scripts
-        wp_enqueue_script( 'wpuf-social-script', WPUF_PRO_ASSET_URI . '/js/jssocials.min.js', array( 'jquery' ), false, true );
+        wp_enqueue_script( 'wpuf-social-script', WPUF_PRO_ASSET_URI . '/js/jssocials.min.js', array( 'jquery' ), WPUF_VERSION, true );
     }
 
     /**
@@ -147,30 +176,45 @@ Class WPUF_Social_Login {
      */
     private function get_providers_config() {
         $config = [
-            'callback'  => $this->callback,
+            'callback'  => $this->account_page_url,
             'providers' => [
-                "Google"    => [
-                    "enabled" => true,
-                    "keys"    => [ "id" => "", "secret" => "" ],
+                'Google'    => [
+                    'enabled' => true,
+                    'keys'    => [
+                        'id' => '',
+                        'secret' => '',
+                    ],
                 ],
-                "Facebook"  => [
-                    "enabled"        => true,
-                    "keys"           => [ "id" => "", "secret" => "" ],
-                    "trustForwarded" => false,
-                    "scope"          => "email, public_profile"
+                'Facebook'  => [
+                    'enabled'        => true,
+                    'keys'           => [
+                        'id' => '',
+                        'secret' => '',
+                    ],
+                    'trustForwarded' => false,
+                    'scope'          => 'email, public_profile',
                 ],
-                "Twitter"   => [
-                    "enabled"      => true,
-                    "keys"         => [ "key" => "", "secret" => "" ],
-                    "includeEmail" => true,
+                'Twitter'   => [
+                    'enabled'      => true,
+                    'keys'         => [
+                        'key' => '',
+                        'secret' => '',
+                    ],
+                    'includeEmail' => true,
                 ],
-                "LinkedIn"  => [
-                    "enabled" => true,
-                    "keys"    => [ "id" => "", "secret" => "" ],
+                'LinkedIn'  => [
+                    'enabled' => true,
+                    'keys'    => [
+                        'id' => '',
+                        'secret' => '',
+                    ],
                 ],
-                "Instagram" => [
-                    "enabled" => true,
-                    "keys"    => [ "id" => "", "secret" => "" ],
+                'Instagram' => [
+                    'enabled' => true,
+                    'keys'    => [
+                        'id' => '',
+                        'secret' => '',
+                    ],
                 ],
             ],
         ];
@@ -179,7 +223,7 @@ Class WPUF_Social_Login {
         $fb_id     = wpuf_get_option( 'fb_app_id', 'wpuf_social_api' );
         $fb_secret = wpuf_get_option( 'fb_app_secret', 'wpuf_social_api' );
 
-        if ( $fb_id != '' && $fb_secret != '' ) {
+        if ( $fb_id !== '' && $fb_secret !== '' ) {
             $config['providers']['Facebook']['keys']['id']     = $fb_id;
             $config['providers']['Facebook']['keys']['secret'] = $fb_secret;
         }
@@ -188,7 +232,7 @@ Class WPUF_Social_Login {
         $g_id     = wpuf_get_option( 'google_app_id', 'wpuf_social_api' );
         $g_secret = wpuf_get_option( 'google_app_secret', 'wpuf_social_api' );
 
-        if ( $g_id != '' && $g_secret != '' ) {
+        if ( $g_id !== '' && $g_secret !== '' ) {
             $config['providers']['Google']['keys']['id']     = $g_id;
             $config['providers']['Google']['keys']['secret'] = $g_secret;
         }
@@ -196,7 +240,7 @@ Class WPUF_Social_Login {
         $l_id     = wpuf_get_option( 'linkedin_app_id', 'wpuf_social_api' );
         $l_secret = wpuf_get_option( 'linkedin_app_secret', 'wpuf_social_api' );
 
-        if ( $l_id != '' && $l_secret != '' ) {
+        if ( $l_id !== '' && $l_secret !== '' ) {
             $config['providers']['LinkedIn']['keys']['id']     = $l_id;
             $config['providers']['LinkedIn']['keys']['secret'] = $l_secret;
         }
@@ -205,7 +249,7 @@ Class WPUF_Social_Login {
         $twitter_id     = wpuf_get_option( 'twitter_app_id', 'wpuf_social_api' );
         $twitter_secret = wpuf_get_option( 'twitter_app_secret', 'wpuf_social_api' );
 
-        if ( $twitter_id != '' && $twitter_secret != '' ) {
+        if ( $twitter_id !== '' && $twitter_secret !== '' ) {
             $config['providers']['Twitter']['keys']['key']    = $twitter_id;
             $config['providers']['Twitter']['keys']['secret'] = $twitter_secret;
         }
@@ -214,7 +258,7 @@ Class WPUF_Social_Login {
         $instagram_id     = wpuf_get_option( 'instagram_app_id', 'wpuf_social_api' );
         $instagram_secret = wpuf_get_option( 'instagram_app_secret', 'wpuf_social_api' );
 
-        if ( $instagram_id != '' && $instagram_secret != '' ) {
+        if ( $instagram_id !== '' && $instagram_secret !== '' ) {
             $config['providers']['Instagram']['keys']['key']    = $instagram_id;
             $config['providers']['Instagram']['keys']['secret'] = $instagram_secret;
         }
@@ -225,7 +269,6 @@ Class WPUF_Social_Login {
          * @param array $config
          *
          * @since 1.0.0
-         *
          */
         $config = apply_filters( 'wpuf_social_providers_config', $config );
 
@@ -260,15 +303,22 @@ Class WPUF_Social_Login {
             /**
              * Hold information about provider when user clicks on Sign In.
              */
-            $provider = ! empty( $_GET['wpuf_reg'] ) ? $_GET['wpuf_reg'] : '';
+            $provider = ! empty( $_GET['wpuf_reg'] ) ? sanitize_text_field( wp_unslash( $_GET['wpuf_reg'] ) ) : '';
+            $form_id  = ! empty( $_GET['form_id'] ) ? sanitize_text_field( wp_unslash( $_GET['form_id'] ) ) : '';
 
             if ( $provider ) {
                 $storage->set( 'provider', $provider );
+                $storage->set( 'form_id', $form_id );
             }
 
-            if ( $provider = $storage->get( 'provider' ) ) {
-                $adapter = $hybridauth->authenticate( $provider );
+            $provider = $storage->get( 'provider' );
 
+            if ( $provider ) {
+                $adapter            = $hybridauth->authenticate( $provider );
+                $access_token       = $adapter->getAccessToken();
+                $this->provider     = $provider;
+                $this->access_token = $access_token && ! empty( $access_token['access_token'] ) ? $access_token['access_token'] : '';
+                $this->form_id      = $storage->get( 'form_id' );
                 $storage->clear();
             }
 
@@ -277,14 +327,22 @@ Class WPUF_Social_Login {
             }
 
             $user_profile = $adapter->getUserProfile();
+            $from_obj     = get_object_vars( $user_profile );
+            $user_profile = new stdClass();
+
+            array_map(
+                function ( $key, $val ) use ( &$user_profile ) {
+                    $user_profile->{$this->camel_to_snake_case( $key )} = $val;
+                }, array_keys( $from_obj ), $from_obj
+            );
 
             if ( ! $user_profile ) {
-                wp_redirect( $this->callback );
+                wp_redirect( $this->account_page_url );
                 exit;
             }
 
             if ( empty( $user_profile->email ) ) {
-                wp_redirect( $this->callback );
+                wp_redirect( $this->account_page_url );
                 exit;
             }
 
@@ -295,7 +353,6 @@ Class WPUF_Social_Login {
             } else {
                 $this->login_user( $wp_user );
             }
-
         } catch ( Exception $e ) {
             wp_die( $e->getMessage() );
         }
@@ -308,14 +365,13 @@ Class WPUF_Social_Login {
      *
      * @return array
      */
-    function wpuf_social_settings_tab( $settings ) {
-
+    public function wpuf_social_settings_tab( $settings ) {
         $s_settings = array(
             array(
                 'id'    => 'wpuf_social_api',
                 'title' => __( 'Social Login', 'wpuf-pro' ),
-                'icon'  => 'dashicons-share'
-            )
+                'icon'  => 'dashicons-share',
+            ),
         );
 
         return array_merge( $settings, $s_settings );
@@ -329,27 +385,26 @@ Class WPUF_Social_Login {
      * @return array
      **/
 
-    function wpuf_pro_social_api_fields( $settings_fields ) {
-
+    public function wpuf_pro_social_api_fields( $settings_fields ) {
         $social_settings_fields = array(
             'wpuf_social_api' => array(
                 'enabled'              => array(
                     'name'  => 'enabled',
                     'label' => __( 'Enable Social Login', 'wpuf-pro' ),
-                    'type'  => "checkbox",
+                    'type'  => 'checkbox',
                     'desc'  => __( 'Enabling this will add Social Icons under registration form to allow users to login or register using Social Profiles', 'wpuf-pro' ),
                 ),
                 'facebook_app_label'   => array(
                     'name'  => 'fb_app_label',
                     'label' => __( 'Facebook App Settings', 'wpuf-pro' ),
-                    'type'  => "html",
+                    'type'  => 'html',
                     'desc'  => '<a target="_blank" href="https://developers.facebook.com/apps/">' . __( 'Create an App', 'wpuf-pro' ) . '</a>' . __( 'if you don\'t have one and fill App ID and App Secret below. ', 'wpuf-pro' ),
                 ),
                 'facebook_app_url'     => array(
                     'name'  => 'fb_app_url',
                     'label' => __( 'Redirect URI', 'wpuf-pro' ),
                     'type'  => 'html',
-                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->callback}'>",
+                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->account_page_url}'>",
                 ),
                 'facebook_app_id'      => array(
                     'name'  => 'fb_app_id',
@@ -371,7 +426,7 @@ Class WPUF_Social_Login {
                     'name'  => 'twitter_app_url',
                     'label' => __( 'Callback URL', 'wpuf-pro' ),
                     'type'  => 'html',
-                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->callback}'>",
+                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->account_page_url}'>",
                 ),
                 'twitter_app_id'       => array(
                     'name'  => 'twitter_app_id',
@@ -393,7 +448,7 @@ Class WPUF_Social_Login {
                     'name'  => 'google_app_url',
                     'label' => __( 'Redirect URI', 'wpuf-pro' ),
                     'type'  => 'html',
-                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->callback}'>",
+                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->account_page_url}'>",
                 ),
                 'google_app_id'        => array(
                     'name'  => 'google_app_id',
@@ -415,7 +470,7 @@ Class WPUF_Social_Login {
                     'name'  => 'linkedin_app_url',
                     'label' => __( 'Redirect URL', 'wpuf-pro' ),
                     'type'  => 'html',
-                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->callback}'>",
+                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->account_page_url}'>",
                 ),
                 'linkedin_app_id'      => array(
                     'name'  => 'linkedin_app_id',
@@ -437,7 +492,7 @@ Class WPUF_Social_Login {
                     'name'  => 'instagram_app_url',
                     'label' => __( 'Redirect URI', 'wpuf-pro' ),
                     'type'  => 'html',
-                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->callback}'>",
+                    'desc'  => "<input class='regular-text' type='text' disabled value='{$this->account_page_url}'>",
                 ),
                 'instagram_app_id'     => array(
                     'name'  => 'instagram_app_id',
@@ -448,8 +503,8 @@ Class WPUF_Social_Login {
                     'name'  => 'instagram_app_secret',
                     'label' => __( 'Client Secret', 'wpuf-pro' ),
                     'type'  => 'text',
-                )
-            )
+                ),
+            ),
         );
 
         return array_merge( $settings_fields, $social_settings_fields );
@@ -461,27 +516,33 @@ Class WPUF_Social_Login {
      * @return void
      */
     public function render_social_logins() {
+        $is_enabled = wpuf_get_option( 'enabled', 'wpuf_social_api', 'off' );
+
+        if ( ! wpuf_validate_boolean( $is_enabled ) ) {
+            return;
+        }
+
         $configured_providers = [];
 
         //facebook config from admin
         $fb_id     = wpuf_get_option( 'fb_app_id', 'wpuf_social_api' );
         $fb_secret = wpuf_get_option( 'fb_app_secret', 'wpuf_social_api' );
 
-        if ( $fb_id != '' && $fb_secret != '' ) {
+        if ( $fb_id !== '' && $fb_secret !== '' ) {
             $configured_providers [] = 'facebook';
         }
         //google config from admin
         $g_id     = wpuf_get_option( 'google_app_id', 'wpuf_social_api' );
         $g_secret = wpuf_get_option( 'google_app_secret', 'wpuf_social_api' );
 
-        if ( $g_id != '' && $g_secret != '' ) {
+        if ( $g_id !== '' && $g_secret !== '' ) {
             $configured_providers [] = 'google';
         }
         //linkedin config from admin
         $l_id     = wpuf_get_option( 'linkedin_app_id', 'wpuf_social_api' );
         $l_secret = wpuf_get_option( 'linkedin_app_secret', 'wpuf_social_api' );
 
-        if ( $l_id != '' && $l_secret != '' ) {
+        if ( $l_id !== '' && $l_secret !== '' ) {
             $configured_providers [] = 'linkedin';
         }
 
@@ -489,7 +550,7 @@ Class WPUF_Social_Login {
         $twitter_id     = wpuf_get_option( 'twitter_app_id', 'wpuf_social_api' );
         $twitter_secret = wpuf_get_option( 'twitter_app_secret', 'wpuf_social_api' );
 
-        if ( $twitter_id != '' && $twitter_secret != '' ) {
+        if ( $twitter_id !== '' && $twitter_secret !== '' ) {
             $configured_providers [] = 'twitter';
         }
 
@@ -497,7 +558,7 @@ Class WPUF_Social_Login {
         $instagram_id     = wpuf_get_option( 'instagram_app_id', 'wpuf_social_api' );
         $instagram_secret = wpuf_get_option( 'instagram_app_secret', 'wpuf_social_api' );
 
-        if ( $instagram_id != '' && $instagram_secret != '' ) {
+        if ( $instagram_id !== '' && $instagram_secret !== '' ) {
             $configured_providers [] = 'instagram';
         }
 
@@ -507,33 +568,41 @@ Class WPUF_Social_Login {
          * @param array $providers
          *
          * @since 1.0.0
-         *
          */
         $providers = apply_filters( 'wpuf_social_provider_list', $configured_providers );
 
-        $redirect_uri = preg_replace( "/^http:/i", "https:", $this->callback );
+        $redirect_uri = preg_replace( '/^http:/i', 'https:', $this->account_page_url );
 
-        $data = array(
-            'base_url'  => $this->callback,
-            'providers' => $providers,
-            'pro'       => true
-        );
+            $base_url  = $this->account_page_url;
+            $providers = $providers;
+            $pro       = true;
 
-        extract( $data );
+        if ( empty( $this->account_page_url ) ) {
+            ?>
+                <div class="error">
+                    <p><?php esc_html_e( 'Account Page URL is not set in WPUF Admin Settings.', 'wpuf-pro' ); ?></p>
+                </div>
+            <?php
+            return;
+        }
 
-        if ( ! is_user_logged_in() && ! empty( $configured_providers ) ) { ?>
+        if ( ! is_user_logged_in() && ! empty( $configured_providers ) ) {
+            ?>
             <script>
-                let wpuf_reg_form_id = document.querySelector('input[name=form_id]').value;
-                document.cookie = 'wpuf_reg_form_id' + "=" + wpuf_reg_form_id;
+                var wpuf_reg_form_id = document.querySelector('input[name=form_id]').value;
+                document.cookie = 'wpuf_reg_form_id' + "=" + wpuf_reg_form_id + ';path=/';
+                window.addEventListener('DOMContentLoaded', (e) => {
+                    document.querySelectorAll('#wpuf_social_link a').forEach(function(link){link.href=link.href+'&form_id='+wpuf_reg_form_id})
+                });
             </script>
             <hr>
             <div class="wpuf-social-login-text"
                  style="text-align:center; font-weight: bold;"><?php __( 'You may also connect with', 'wpuf-pro' ); ?></div>
             <br>
-            <ul class="jssocials-shares">
+            <ul class="jssocials-shares" id="wpuf_social_link">
                 <?php foreach ( $providers as $provider ) : ?>
-                    <li class="jssocials-share jssocials-share-<?php echo $provider ?>">
-                        <a href="<?php echo add_query_arg( array( 'wpuf_reg' => $provider ), $this->callback ); ?>"
+                    <li class="jssocials-share jssocials-share-<?php echo $provider; ?>">
+                        <a href="<?php echo add_query_arg( array( 'wpuf_reg' => $provider ), $this->account_page_url ); ?>"
                            class="jssocials-share-link">
                             <img src="<?php echo WPUF_PRO_ASSET_URI . '/images/social-icons/' . $provider . '.png'; ?>"
                                  class="jssocials-share-logo" alt=""> <?php echo ucfirst( $provider ); ?>
@@ -541,7 +610,8 @@ Class WPUF_Social_Login {
                     </li>
                 <?php endforeach; ?>
             </ul>
-        <?php }
+            <?php
+        }
     }
 
     /**
@@ -553,7 +623,7 @@ Class WPUF_Social_Login {
      *
      * @return string The unique username.
      */
-    function generate_unique_username( $username ) {
+    public function generate_unique_username( $username ) {
         static $i;
         if ( null === $i ) {
             $i = 1;
@@ -583,33 +653,34 @@ Class WPUF_Social_Login {
      */
     private function register_new_user( $data ) {
         $form_settings = array();
+        $form_id       = $this->form_id;
+        $form_settings = wpuf_get_form_settings( $form_id );
 
-        if ( isset( $_COOKIE['wpuf_reg_form_id'] ) ) {
-            $form_id = $_COOKIE['wpuf_reg_form_id'];
-            $form_settings = wpuf_get_form_settings( $form_id );
+        if ( wpuf_is_vendor_reg( $form_id ) ) {
+            $this->account_page_url = wpuf_get_dokan_redirect_url();
         }
 
         $user_role = isset( $form_settings['role'] ) ? $form_settings['role'] : 'subscriber';
+        $uname     = $data->email;
 
-        $uname = $data->email;
         if ( empty( $uname ) ) {
-            $uname = $data->displayName;
+            $uname = $data->display_name;
         }
 
         $userdata = array(
             'user_login' => $this->generate_unique_username( $uname ),
             'user_email' => $data->email,
             'user_pass'  => wp_generate_password(),
-            'first_name' => $data->firstName,
-            'last_name'  => $data->lastName,
+            'first_name' => $data->first_name,
+            'last_name'  => $data->last_name,
             'role'       => $user_role,
         );
 
         $user_id = wp_insert_user( $userdata );
-
         if ( ! is_wp_error( $user_id ) ) {
+            $this->store_avatar( $user_id, $data );
             $this->login_user( get_userdata( $user_id ) );
-            wp_redirect( $this->callback );
+            wp_redirect( $this->account_page_url );
             exit;
         }
     }
@@ -629,6 +700,81 @@ Class WPUF_Social_Login {
         update_user_caches( $wp_user );
     }
 
+    /**
+     * Store user avatar from facebook
+     *
+     * @since 3.4.7
+     *
+     * @param $user_id
+     * @param $data
+     *
+     * @return void
+     */
+    private function store_avatar( $user_id, $data ) {
+        if ( is_null( $this->access_token ) || $this->provider !== 'facebook' ) {
+            return;
+        }
+
+        $image_url     = $data->photo_url . '&access_token=' . $this->access_token;
+        $profile_image = file_get_contents( $image_url );
+        $headers       = [];
+
+        array_map(
+            function ( $key_value ) use ( &$headers ) {
+                $arr_split           = preg_split( '/:/', $key_value, 2 );
+                $headers[ $arr_split[0] ] = $arr_split && ! empty( $arr_split[1] ) ? $arr_split[1] : '';
+            }, $http_response_header
+        );
+
+        $file_name      = pathinfo( $headers['Location'], PATHINFO_FILENAME );
+        $file_extension = explode( '/', $headers['Content-Type'] )[1];
+        $hash           = wp_hash( time() );
+        $hash           = substr( $hash, 0, 8 );
+
+        $file_name = $data->identifier . '-' . $hash . '.' . $file_extension;
+        $file_path = wp_upload_dir()['path'] . '/' . $file_name;
+
+        file_put_contents( $file_path, $profile_image );
+
+        $attachment = [
+            'post_author'    => $user_id,
+            'post_mime_type' => $headers['Content-Type'],
+            'post_title'     => $file_name,
+            'post_content'   => '',
+            'post_status'    => 'inherit',
+            'comment_status' => 'closed',
+        ];
+
+        $attach_id    = wp_insert_attachment( $attachment, $file_path );
+        $imagenew     = get_post( $attach_id );
+        $fullsizepath = get_attached_file( $imagenew->ID );
+
+        if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+        }
+
+        $attach_data = wp_generate_attachment_metadata( $attach_id, $fullsizepath );
+        wp_update_attachment_metadata( $attach_id, $attach_data );
+        update_user_meta( $user_id, 'user_avatar', $attach_id );
+    }
+
+    /**
+     * Convert Pascel to snake case
+     *
+     * @since 3.4.7
+     *
+     * @param $input
+     *
+     * @return string
+     */
+    public function camel_to_snake_case( $input ) {
+        preg_match_all( '!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches );
+        $ret = $matches[0];
+        foreach ( $ret as &$match ) {
+            $match = $match === strtoupper( $match ) ? strtolower( $match ) : lcfirst( $match );
+        }
+        return implode( '_', $ret );
+    }
 }
 
 $wpuf_social_login = WPUF_Social_Login::init();

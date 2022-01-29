@@ -6,7 +6,7 @@
  **/
 class WPUF_Form_Field_Toc extends WPUF_Form_Field_Text {
 
-    function __construct() {
+    public function __construct() {
         $this->name       = __( 'Terms & Conditions', 'wpuf-pro' );
         $this->input_type = 'toc';
         $this->icon       = 'file-text';
@@ -26,22 +26,26 @@ class WPUF_Form_Field_Toc extends WPUF_Form_Field_Text {
      * @return void
      */
     public function render( $field_settings, $form_id, $type = 'post', $post_id = null ) {
-        if ( $post_id ) {
-            return;
+        $value = '';
+        if ( isset( $post_id ) && $post_id !== 0 ) {
+            $value = get_metadata( $type, $post_id, $field_settings['name'], true );
         }
-
         ?>
-
         <li <?php $this->print_list_attributes( $field_settings ); ?>>
             <div class="wpuf-label">
                 &nbsp;
             </div>
 
-            <div data-required="<?php echo $field_settings['show_checkbox'] ? 'yes' : 'no' ?>" data-type="radio" class="wpuf-fields <?php echo ' wpuf_'.$field_settings['name'].'_'.$form_id; ?>">
+            <div data-required="<?php echo esc_attr( $field_settings['show_checkbox'] ) ? 'yes' : 'no'; ?>" data-type="radio" class="wpuf-fields <?php echo esc_attr( ' wpuf_' . $field_settings['name'] . '_' . $form_id ); ?>">
 
                 <label>
                     <?php if ( isset( $field_settings['show_checkbox'] ) && $field_settings['show_checkbox'] ) : ?>
-                        <input type="checkbox" name="wpuf_accept_toc" required="required" />
+                        <input 
+                            type="checkbox" 
+                            name="<?php echo esc_attr( $field_settings['name'] ); ?>" 
+                            required="required" 
+                            <?php checked( 'on', $value ); ?>
+                        />
                     <?php endif; ?>
 
                     <?php echo $field_settings['description']; ?>
@@ -89,11 +93,11 @@ class WPUF_Form_Field_Toc extends WPUF_Form_Field_Text {
                 'name'          => 'show_checkbox',
                 'type'          => 'checkbox',
                 'options'       => array(
-                    true        => __( 'Show checkbox', 'wpuf-pro' )
+                    true        => __( 'Show checkbox', 'wpuf-pro' ),
                 ),
                 'section'       => 'basic',
                 'priority'      => 11,
-            )
+            ),
         );
 
         return $settings;
@@ -105,7 +109,7 @@ class WPUF_Form_Field_Toc extends WPUF_Form_Field_Text {
      * @return array
      */
     public function get_field_props() {
-        $props    = array(
+        $props = array(
 
             'input_type'        => 'toc',
             'template'          => 'toc',
@@ -119,15 +123,23 @@ class WPUF_Form_Field_Toc extends WPUF_Form_Field_Text {
             'is_new'            => true,
             'show_in_post'      => 'yes',
             'hide_field_label'  => 'no',
-            // 'label'         => '',
-            // 'description'   => __( 'I have read and agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a>', 'wpuf-pro' ),
-            // 'show_checkbox' => true,
-             'wpuf_cond'     => ''
-             // 'wpuf_cond'     => null
-
+            'wpuf_cond'         => '',
         );
 
         return $props;
     }
 
+    /**
+     * Render field data
+     *
+     * @since 3.3.1
+     *
+     * @param mixed $data
+     * @param array $field
+     *
+     * @return string
+     */
+    public function render_field_data( $data, $field ) {
+        return '';
+    }
 }

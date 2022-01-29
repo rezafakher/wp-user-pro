@@ -113,6 +113,15 @@ class WPUF_Form_Field_GMap extends WPUF_Field_Contract {
 
                         var geocoder = new google.maps.Geocoder();
 
+                        // Prevent from go next step for multi step form
+                        input_add.keypress( function( event ){
+                            var keycode = ( event.keyCode ? event.keyCode : event.which );
+
+                            if( keycode === '13' ){
+                                event.preventDefault();
+                            }
+                        });
+
                         // Create the search box and link it to the UI element.
                         var input     = input_add.get(0);
                         var searchBox = new google.maps.places.SearchBox(input);
@@ -163,7 +172,7 @@ class WPUF_Form_Field_GMap extends WPUF_Field_Contract {
                                     position: place.geometry.location
                                 }));
 
-                                updatePositionInput(place.geometry.location);
+                                updatePositionInput(place.geometry.location, map);
 
                                 if (place.geometry.viewport) {
                                     // Only geocodes have viewport.
@@ -192,7 +201,7 @@ class WPUF_Form_Field_GMap extends WPUF_Field_Contract {
                                 map: map
                             }));
 
-                            updatePositionInput(latLng);
+                            updatePositionInput(latLng, map);
 
                             map.panTo(latLng);
                         });
@@ -254,30 +263,27 @@ class WPUF_Form_Field_GMap extends WPUF_Field_Contract {
                                         var latLng = {lat: parseFloat(position.coords.latitude), lng: parseFloat(position.coords.longitude)};
 
                                         geocoder.geocode({'location': latLng}, function(results, status) {
-                                            var formatted_address = '';
-
                                             if ( status === 'OK' ) {
                                                 var address = results[0];
-                                                formatted_address = address.formatted_address;
+                                                var acf_compaitable = parseResult( address, map );
                                             }
 
-                                            input_area.val( formatted_address + ' || ' + position.coords.latitude + ' || ' + position.coords.longitude  );
+                                            input_area.val(JSON.stringify(acf_compaitable));
                                         })
                                     });
                                 }
                             }
                         });
 
-                        function updatePositionInput( latLng ) {
+                        function updatePositionInput( latLng, map ) {
                             geocoder.geocode({'location': latLng}, function(results, status) {
-                                var formatted_address = '';
 
                                 if ( status === 'OK' ) {
                                     var address = results[0];
-                                    formatted_address = address.formatted_address;
+                                    var acf_compaitable = parseResult( address, map );
                                 }
 
-                                input_area.val( formatted_address + ' || ' + latLng.lat() + ' || ' + latLng.lng() );
+                                input_area.val(JSON.stringify(acf_compaitable));
                             })
                         }
 
@@ -322,6 +328,60 @@ class WPUF_Form_Field_GMap extends WPUF_Field_Contract {
                                 }
                             });
                         });
+
+                      function parseResult( obj, map ) {
+
+                            var result = {
+                                address: obj.formatted_address,
+                                lat: obj.geometry.location.lat(),
+                                lng: obj.geometry.location.lng(),
+                            };
+
+                            result.zoom = map.getZoom();
+
+                            if( obj.place_id ) {
+                                result.place_id = obj.place_id;
+                            }
+
+                            if( obj.name ) {
+                                result.name = obj.name;
+                            }
+
+                            var map_keys = {
+                                street_number: [ 'street_number' ],
+                                street_name: [ 'street_address', 'route' ],
+                                city: [ 'locality' ],
+                                state: [
+                                    'administrative_area_level_1',
+                                    'administrative_area_level_2',
+                                    'administrative_area_level_3',
+                                    'administrative_area_level_4',
+                                    'administrative_area_level_5'
+                                ],
+                                post_code: [ 'postal_code' ],
+                                country: [ 'country' ]
+                            };
+
+                            for( var k in map_keys ) {
+                                var keywords = map_keys[ k ];
+
+                                for( var i = 0; i < obj.address_components.length; i++ ) {
+                                    var component = obj.address_components[ i ];
+                                    var component_type = component.types[0];
+
+                                    if( keywords.indexOf(component_type) !== -1 ) {
+
+                                        result[ k ] = component.long_name;
+
+                                        if( component.long_name !== component.short_name ) {
+                                            result[ k + '_short' ] = component.short_name;
+                                        }
+                                    }
+                                }
+                            }
+
+                            return  result;
+                        }
 
 
                     });

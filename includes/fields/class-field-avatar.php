@@ -28,9 +28,14 @@ class WPUF_Form_Field_Avater extends WPUF_Field_Contract {
     public function render( $field_settings, $form_id, $type = 'post', $post_id = null ) {
         $has_avatar = false;
 
+        $avatar_size    = wpuf_get_option( 'avatar_size', 'wpuf_profile', '100x100' );
+        $avatar_size    = explode( 'x', $avatar_size );
+        $avatar_width   = $avatar_size[0];
+        $avatar_height  = $avatar_size[1];
+
         if( isset( $post_id ) && $post_id != 0 ){
             $has_avatar     = true;
-            $featured_image = get_avatar( $post_id );
+            $featured_image = get_avatar( $post_id, $avatar_width );
         }
 
         $unique_id = sprintf( '%s-%d', $field_settings['name'], $form_id );
@@ -44,14 +49,20 @@ class WPUF_Form_Field_Avater extends WPUF_Field_Contract {
                     <div class="wpuf-attachment-upload-filelist" data-type="file" data-required="<?php echo $field_settings['required']; ?>">
                         <a id="wpuf-<?php echo $unique_id; ?>-pickfiles" data-form_id="<?php echo $form_id; ?>" class="button file-selector <?php echo ' wpuf_' . $field_settings['name'] . '_' . $form_id; ?>" href="#"><?php echo $field_settings['button_label']; ?></a>
 
-                        <ul class="wpuf-attachment-list thumbnails">
+                        <ul class="wpuf-attachment-list thumbnail">
                             <?php
                                 if ( $has_avatar ) {
                                     $avatar = get_user_meta( $post_id, 'user_avatar', true );
                                     if ( $avatar ) {
-                                        echo '<li>'.$featured_image;
-                                        printf( '<br><a href="#" data-confirm="%s" class="btn btn-danger btn-small wpuf-button button wpuf-delete-avatar">%s</a>', __( 'Are you sure?', 'wpuf-pro' ), __( 'Delete', 'wpuf-pro' ) );
-                                        echo '</li>';
+                                        printf(
+                                            '<li>
+                                                %s
+                                                <a href="#" data-confirm="%s" class="btn btn-danger btn-small wpuf-button button wpuf-delete-avatar">%s</a>
+                                            </li>',
+                                            $featured_image,
+                                            __( 'Are you sure?', 'wpuf-pro' ),
+                                            __( 'Delete', 'wpuf-pro' )
+                                        );
                                     }
                                 }
                             ?>
@@ -72,6 +83,35 @@ class WPUF_Form_Field_Avater extends WPUF_Field_Contract {
                 })(jQuery);
             </script>
 
+            <style>
+                /**
+                 * @note We don't have any css for wpuf-pro, so adding the style here :(
+                 */
+                #wpuf-<?php echo $unique_id; ?>-upload-container .wpuf-attachment-upload-filelist {
+                    position: relative;
+                    z-index: 1;
+                }
+
+                #wpuf-<?php echo $unique_id; ?>-upload-container .wpuf-attachment-list.thumbnail > li {
+                    width: auto;
+                    height: auto;
+                    text-align: center;
+                    border: 0;
+                    padding: 0;
+                }
+
+                #wpuf-<?php echo $unique_id; ?>-upload-container .wpuf-attachment-list.thumbnail > li img.avatar {
+                    width: <?php echo absint( $avatar_width ) ?>px;
+                    height: <?php echo absint( $avatar_height ) ?>px;
+                    max-width: <?php echo absint( $avatar_width ) ?>px;
+                    max-height: <?php echo absint( $avatar_height ) ?>px;
+                    margin-bottom: 10px;
+                    border: 1px solid #eee;
+                    border-radius: 4px;
+                    padding: 3px;
+                    margin: 0;
+                }
+            </style>
         </li>
 
         <?php

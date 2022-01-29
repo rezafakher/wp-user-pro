@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Campaign Monitor
  * Description: Subscribe a contact to Campaign Monitor when a form is submited
- * Plugin URI: https://wedevs.com/wp-user-frontend-pro/
+ * Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/campaign-monitor/
  * Thumbnail Name: campaign_monitor.png
  * Author: weDevs
  * Version: 1.0
@@ -15,7 +15,6 @@
 class WPUF_Campaign_Monitor {
 
     function __construct() {
-
         add_action( 'wpuf_admin_menu', array( $this, 'add_campaign_monitor_menu' ) );
         add_action( 'wpuf_profile_form_tab', array( $this, 'add_tab_campaign_monitor_form' ) );
         add_action( 'wpuf_profile_form_tab_content', array( $this, 'add_tab_content_profile_form' ) );
@@ -30,7 +29,6 @@ class WPUF_Campaign_Monitor {
      * @return string
      */
     private function get_api_key() {
-
         $api_key = get_option( 'wpuf_campaign_monitor_api_key' );
 
         return $api_key;
@@ -40,7 +38,7 @@ class WPUF_Campaign_Monitor {
      * Add Campaign Monitor Submenu in WPUF
      */
     public function add_campaign_monitor_menu() {
-        add_submenu_page( 'wp-user-frontend', __( 'Campaign Monitor', 'wpuf-pro' ), __( 'Campaign Monitor', 'wpuf-pro' ), 'manage_options', 'wpuf_campaign_monitor', array($this, 'campaign_monitor_page') );
+        add_submenu_page( 'wp-user-frontend', __( 'Campaign Monitor', 'wpuf-pro' ), __( 'Campaign Monitor', 'wpuf-pro' ), 'manage_options', 'wpuf_campaign_monitor', array( $this, 'campaign_monitor_page' ) );
     }
 
     /**
@@ -87,7 +85,6 @@ class WPUF_Campaign_Monitor {
      * @return void
      */
     public function get_lists() {
-
         $api_key = $this->get_api_key();
 
         $this->require_campaign_monitor();
@@ -104,7 +101,7 @@ class WPUF_Campaign_Monitor {
 
         if ( $result->http_status_code === 200 ) {
             foreach ( $result->response as $client ) {
-                if ( !class_exists('CS_REST_Clients') ) {
+                if ( ! class_exists( 'CS_REST_Clients' ) ) {
                     require_once dirname( __FILE__ ) . '/cm-php-sdk/csrest_clients.php';
                 }
                 $client_class = new CS_REST_Clients( $client->ClientID, $auth );
@@ -113,12 +110,12 @@ class WPUF_Campaign_Monitor {
         }
 
         foreach ( $client_lists as $list ) {
-            foreach ($list->response as $list_obj) {
+            foreach ( $list->response as $list_obj ) {
                 $list_object[] = $list_obj;
             }
         }
 
-        foreach ($list_object as $list) {
+        foreach ( $list_object as $list ) {
             $lists[] = array(
                 'id'     => $list->ListID,
                 'name'   => $list->Name,
@@ -138,7 +135,6 @@ class WPUF_Campaign_Monitor {
      * @return void
      */
     public function subscribe_user( $user_id, $form_id, $form_settings ) {
-
         if ( ! isset( $form_settings['enable_campaign_monitor'] ) || $form_settings['enable_campaign_monitor'] == 'no' ) {
             return;
         }
@@ -149,18 +145,21 @@ class WPUF_Campaign_Monitor {
         $this->require_campaign_monitor();
         $auth = array( 'api_key' => $this->get_api_key() );
 
-        if ( !class_exists('CS_REST_Subscribers') ) {
+        if ( ! class_exists( 'CS_REST_Subscribers' ) ) {
             require_once dirname( __FILE__ ) . '/cm-php-sdk/csrest_subscribers.php';
         }
 
         $wrap = new CS_REST_Subscribers( $list_selected, $auth );
 
-        $result = $wrap->add(array(
-            'EmailAddress' => $user->user_email,
-            'Name' => $user->display_name,
-            'CustomFields' => array(),
-            'Resubscribe' => true
-        ));
+        $result = $wrap->add(
+            array(
+                'EmailAddress' => $user->user_email,
+                'Name' => $user->display_name,
+                'CustomFields' => array(),
+                'Resubscribe' => true,
+                'ConsentToTrack' => 'yes',
+            )
+        );
     }
 }
 

@@ -93,4 +93,17 @@ class WPUF_Form_Field_Step extends WPUF_Form_Field_Text {
         return $props;
     }
 
+    /**
+     * Render field data
+     *
+     * @since 3.3.1
+     *
+     * @param mixed $data
+     * @param array $field
+     *
+     * @return string
+     */
+    public function render_field_data( $data, $field ) {
+        return '';
+    }
 }

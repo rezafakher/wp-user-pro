@@ -253,7 +253,7 @@ class WPUF_Admin_Profile_Forms_List_Table extends WP_List_Table {
 
                 $form = $query->posts[ $i ];
 
-                $settings = get_post_meta( get_the_ID(), 'wpuf_form_settings', true );
+                $settings = (array) get_post_meta( get_the_ID(), 'wpuf_form_settings', true );
 
                 $forms[ $i ] = array(
                     'ID'                 => $form->ID,

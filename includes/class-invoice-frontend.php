@@ -43,9 +43,10 @@ class WPUF_Invoice_Frontend {
     public function display_pro_nav( $sections ) {
 
         if ( is_user_logged_in() ) {
-            $inv_section = array(
-                array( 'slug' => 'invoices', 'label' => __( 'Invoices', 'wpuf-pro' ) ),
-            );
+            $inv_section = [
+                'invoices' => __( 'Invoices', 'wpuf-pro' )
+            ];
+
             if ( wpuf_get_option( 'show_invoices', 'wpuf_payment_invoices', 'on' ) == 'on' ) {
                 $sections = array_merge( $sections , $inv_section);
             }

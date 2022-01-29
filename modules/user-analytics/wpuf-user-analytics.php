@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: User Analytics
-Plugin URI: http://wedevs.com/plugin/wp-user-frontend-pro/
+Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/user-analytics/
 Thumbnail Name: wpuf-ua.png
 Description: Show user tracking info during post and registration from Frontend
 Version: 1.1

@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Mailchimp
-Plugin URI: http://wedevs.com/
+Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/add-users-to-mailchimp-subscribers-list-upon-registration-from-frontend/
 Thumbnail Name: wpuf-mailchimp.png
 Description: Add subscribers to Mailchimp mailing list when they registers via WP User Frontend Pro
 Version: 0.2.1

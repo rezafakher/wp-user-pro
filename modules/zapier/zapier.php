@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Zapier
  * Description: Subscribe a contact to Zapier when a form is submited
- * Plugin URI: https://wedevs.com/wp-user-frontend-pro/
+ * Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/zapier/
  * Thumbnail Name: zapier.png
  * Author: weDevs
  * Version: 1.0
@@ -92,7 +92,7 @@ class WPUF_Zapier {
 
         $response = $zapier->call( json_encode( $postdata ) );
 
-        return $response; 
+        return $response;
     }
 }
 

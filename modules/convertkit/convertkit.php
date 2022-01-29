@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ConvertKit
  * Description: Subscribe a contact to ConvertKit when a form is submited
- * Plugin URI: https://wedevs.com/wp-user-frontend-pro/
+ * Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/convertkit/
  * Thumbnail Name: convertkit.png
  * Author: weDevs
  * Version: 1.0

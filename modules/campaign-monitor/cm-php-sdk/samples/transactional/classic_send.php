@@ -1,8 +1,9 @@
 <?php
 require_once "../../csrest_transactional_classicemail.php";
 
+$client_id = "Your Client ID";
 $auth = array("api_key" => "Your API Key");
-$wrap = new CS_REST_Transactional_ClassicEmail($auth, NULL);
+$wrap = new CS_REST_Transactional_ClassicEmail($auth, $client_id);
 
 echo "\nSending a simple message...\n";
 
@@ -13,10 +14,11 @@ $simple_message = array(
   "HTML" => "This is the HTML message body with a <a href='http://google.com'>link</a>."
 );
 $group_name = 'PHP test group'; # optional but great for reporting, should not be unique per message
-$result = $wrap->send($simple_message, $group_name);
+$consent_to_track = 'yes'; # Valid: 'yes', 'no', 'unchanged'
+
+$result = $wrap->send($simple_message, $group_name,$consent_to_track);
 echo "\nSent! Here's the response:\n";
 var_dump($result->response);
-
 
 echo "\nSending a message with all the options...\n";
 
@@ -48,12 +50,14 @@ $complex_message = array(
 );
 $group_name = "PHP test group"; # optional, great for reporting, should not be unique message
 $add_recipients_to_subscriber_list_ID = "6d0366fcee146ab9bdaf3247446bbfdd"; # optional, make sure you have permission
+$consent_to_track = 'yes'; # Valid: 'yes', 'no', 'unchanged'
+
 $options = array(
   "TrackOpens" => true,
   "TrackClicks" => true,
   "InlineCSS" => true,
 ); # all are true by default, but you can override
-$result = $wrap->send($complex_message, $group_name, $add_recipients_to_subscriber_list_ID, $options);
+$result = $wrap->send($complex_message, $group_name, $consent_to_track, $add_recipients_to_subscriber_list_ID, $options);
 echo "\nSent! Here's the response:\n";
 var_dump($result->response);
 

@@ -63,27 +63,19 @@ class WPUF_pro_form_element extends WPUF_Admin_Template_Post {
                 <th><?php _e( 'Post Expiration Time', 'wpuf-pro' ); ?></th>
                 <td>
                     <?php
-                    $timeType_array = array(
-                        'year' => 100,
-                        'month' => 12,
-                        'day' => 30
-                    );
+                    $timeType_array = [
+                        'year',
+                        'month',
+                        'day'
+                    ];
 
                     ?>
-                    <select name="wpuf_settings[expiration_settings][expiration_time_value]" id="wpuf-expiration_time_value">
-                        <?php
-                        for( $i = 1; $i <= $timeType_array[$time_type]; $i++ ){
-                            ?>
-                            <option value="<?php echo $i; ?>" <?php echo $i == $time_value?'selected':''; ?> ><?php echo $i;?></option>
-                        <?php
-                        }
-                        ?>
-                    </select>
+                    <input type="number" name="wpuf_settings[expiration_settings][expiration_time_value]" id="wpuf-expiration_time_value" value="<?php echo $time_value; ?>" min="1">
                     <select name="wpuf_settings[expiration_settings][expiration_time_type]" id="wpuf-expiration_time_type">
                         <?php
-                        foreach( $timeType_array as $each_time_type=>$each_time_type_val ){
+                        foreach( $timeType_array as $each_time_type ){
                             ?>
-                            <option value="<?php echo $each_time_type;?>" <?php echo $each_time_type==$time_type?'selected':''; ?> ><?php echo ucfirst( $each_time_type ); ?></option>
+                            <option value="<?php echo $each_time_type;?>" <?php echo $each_time_type==$time_type?'selected':''; ?> ><?php echo ucfirst( $each_time_type ). '(s)'; ?></option>
                         <?php
                         }
                         ?>

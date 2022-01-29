@@ -294,6 +294,30 @@
 </div>
 </script>
 
+<script type="text/x-template" id="tmpl-wpuf-field-math-captcha">
+<div v-if="met_dependencies" class="panel-field-opt panel-field-opt-text">
+    <label>
+        {{ option_field.title }} <help-text v-if="option_field.help_text" :text="option_field.help_text"></help-text>
+
+        <input
+            v-if="option_field.variation && 'number' === option_field.variation"
+            type="number"
+            v-model="value"
+            @focusout="on_focusout"
+            @keyup="on_keyup"
+        >
+
+        <input
+            v-if="!option_field.variation"
+            type="text"
+            v-model="value"
+            @focusout="on_focusout"
+            @keyup="on_keyup"
+        >
+    </label>
+</div>
+</script>
+
 <script type="text/x-template" id="tmpl-wpuf-field-repeater-columns">
 <div v-show="met_dependencies" class="panel-field-opt panel-field-opt-repeater-columns">
 
@@ -380,7 +404,15 @@
                         :value="addr_field_details.value"
                         :placeholder="addr_field_details.placeholder"
                         :required="'checked' === addr_field_details.required"
+                        v-if="'text' == addr_field_details.type"
                     >
+                    <select 
+                        name="" 
+                        id=""
+                        v-if="'select' == addr_field_details.type"
+                    >
+                    <option value=""><?php _e( 'Select State', 'wpuf-pro' ); ?></option>
+                    </select>
                 </template>
 
                 <template v-else>
@@ -496,17 +528,20 @@
 
 <script type="text/x-template" id="tmpl-wpuf-form-google_map">
 <div class="wpuf-fields">
+    <?php if ( ! empty( wpuf_get_option( 'gmap_api_key', 'wpuf_general' ) ) ): ?>
     <div :class="['wpuf-form-google-map-container', 'yes' === field.address ? 'show-search-box': 'hide-search-box']">
         <input class="wpuf-google-map-search" type="text" placeholder="<?php _e( 'Search address', 'wpuf-pro' ); ?>">
         <div class="wpuf-form-google-map"></div>
     </div>
     <div :class="['wpuf-fields clearfix', field.directions ? 'has-directions-checkbox' : '']">
-	    <span v-if="field.directions" class="wpuf-directions-checkbox">
-	        <a class="btn btn-brand btn-sm" href="#" ><i class="fa fa-map-marker" aria-hidden="true"></i><?php _e( 'Directions »', 'wpuf-pro' ); ?></a>
-	    </span>
+        <span v-if="field.directions" class="wpuf-directions-checkbox">
+            <a class="btn btn-brand btn-sm" href="#" ><i class="fa fa-map-marker" aria-hidden="true"></i><?php _e( 'Directions »', 'wpuf-pro' ); ?></a>
+        </span>
     </div>
-
     <span v-if="field.help" class="wpuf-help" v-html="field.help" />
+    <?php else: ?>
+        <p><?php esc_html_e( 'Please set Google Map API Key first in WPUF admin settings to use this Google Map field.', 'wpuf-pro' ); ?></p>
+    <?php endif; ?>
 </div>
 </script>
 
@@ -521,6 +556,43 @@
     >
     <span v-if="field.help" class="wpuf-help" v-html="field.help"> </span>
 </div>
+</script>
+
+<script type="text/x-template" id="tmpl-wpuf-form-math_captcha">
+<div class="wpuf-fields">
+    <div class="wpuf-math-captcha">
+        <ul class="captcha">
+            <li class="refresh">
+                <svg fill="#555555" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="tiny" x="0px" y="0px" width="30px" height="30px" viewBox="0 0 480 480" xml:space="preserve" style="vertical-align: bottom;">
+                    <g>
+                        <path d="M383.434,172.242c-25.336-58.241-81.998-95.648-145.861-95.648c-65.309,0-125,40.928-148.514,101.827l49.5,19.117   c15.672-40.617,55.469-67.894,99.014-67.894c42.02,0,79.197,24.386,96.408,62.332l-36.117,14.428l92.352,53.279l27.01-100.933   L383.434,172.242z"></path>
+                        <path d="M237.573,342.101c-41.639,0-79.615-25.115-96.592-62.819l35.604-13.763l-91.387-52.119l-27.975,98.249l34.08-13.172   c24.852,58.018,82.859,96.671,146.27,96.671c65.551,0,123.598-39.336,147.871-100.196l-49.268-19.652   C319.981,315.877,281.288,342.101,237.573,342.101z"></path>
+                    </g>
+                </svg>
+            </li>
+            <li class="captcha-number-area">
+                <p class="captcha-number">
+                    <span v-html="captcha.operandOne"></span>
+                    <span v-html="captcha.operator"></span>
+                    <span v-html="captcha.operandTwo"></span>
+                </p>
+            </li>
+            <li class="captcha-equal">=</li>
+            <li>
+                <input
+                    type="text"
+                    :class="class_names('textfield')"
+                    :placeholder="field.placeholder"
+                    :value="field.default"
+                    :size="field.size"
+                >
+            </li>
+        </ul>
+    </div>
+    
+    <span v-if="field.help" class="wpuf-help" v-html="field.help" />
+</div>
+
 </script>
 
 <script type="text/x-template" id="tmpl-wpuf-form-nickname">

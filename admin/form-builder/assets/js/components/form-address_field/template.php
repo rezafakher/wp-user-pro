@@ -18,7 +18,15 @@
                         :value="addr_field_details.value"
                         :placeholder="addr_field_details.placeholder"
                         :required="'checked' === addr_field_details.required"
+                        v-if="'text' == addr_field_details.type"
                     >
+                    <select 
+                        name="" 
+                        id=""
+                        v-if="'select' == addr_field_details.type"
+                    >
+                    <option value=""><?php _e( 'Select State', 'wpuf-pro' ); ?></option>
+                    </select>
                 </template>
 
                 <template v-else>

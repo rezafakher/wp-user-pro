@@ -31,20 +31,21 @@ class CS_REST_TestBase extends UnitTestCase {
         $this->mock_transport->setReturnValue('get_type', $this->transport_type);
         $this->mock_serialiser->setReturnValue('get_type', $this->serialisation_type);
 
-        $this->base_route = $this->protocol.'://'.$this->api_host.'/api/v3.1/';
+        $this->base_route = $this->protocol.'://'.$this->api_host.'/api/v3.2/';
 
         $this->set_up_inner();
     }
 
     function set_up_inner() {
         $this->wrapper = new CS_REST_General($this->auth, $this->protocol, $this->log_level,
-            $this->api_host, $this->mock_log, $this->mock_serialiser, $this->mock_transport);
+                                             $this->api_host, $this->mock_log, $this->mock_serialiser,
+                                             $this->mock_transport);
     }
 
     function get_call_options($route, $method = 'GET') {
         return array (
             'authdetails' => $this->auth,
-            'userAgent' => 'CS_REST_Wrapper v'.CS_REST_WRAPPER_VERSION.
+            'userAgent' => 'createsend-php v'.CS_REST_WRAPPER_VERSION.
             ' PHPv'.phpversion().' over '.$this->transport_type.' with '.$this->serialisation_type,
             'contentType' => 'application/json; charset=utf-8',
             'deserialise' => true,

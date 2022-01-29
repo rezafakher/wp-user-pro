@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Stripe Payment
  * Description: Stripe payment gateway for WP User Frontend
- * Plugin URI: https://wedevs.com/products/plugins/wp-user-frontend-pro/stripe/
+ * Plugin URI: https://wedevs.com/docs/wp-user-frontend-pro/modules/stripe/
  * Thumbnail Name: wpuf-stripe.png
  * Author: weDevs
  * Author URI: http://wedevs.com/
@@ -136,8 +136,30 @@ class WPUF_Stripe {
         if ( ! isset( $_GET['action'] ) || $_GET['action'] != 'wpuf_pay' ) {
             return;
         }
-
-        $wpuf_stripe_api_key = wpuf_get_option('stripe_api_key', 'wpuf_payment');
+        $css                 = [
+            'style' =>
+                [
+                    'base'    =>
+                        [
+                            'backgroundColor' => 'transparent',
+                            'color'           => '#32325D',
+                            'fontWeight'      => 500,
+                            'fontFamily'      => 'Inter UI, Open Sans, Segoe UI, sans-serif',
+                            'fontSize'        => '16px',
+                            'fontSmoothing'   => 'antialiased',
+                            '::placeholder'   =>
+                                [
+                                    'color' => '#CFD7DF',
+                                ],
+                        ],
+                    'invalid' =>
+                        [
+                            'color' => '#E25950',
+                        ],
+                ],
+        ];
+        $wpuf_stripe_css     = apply_filters( 'wpuf_stripe_custom_css', $css );
+        $wpuf_stripe_api_key = wpuf_get_option( 'stripe_api_key', 'wpuf_payment' );
         ?>
 
         <script type="text/javascript" src="https://js.stripe.com/v3/"></script>
@@ -162,10 +184,9 @@ class WPUF_Stripe {
                     var wpufStripeKey             = '<?php echo $wpuf_stripe_api_key; ?>';
                     var wpufStripe                = Stripe(wpufStripeKey);
                     var wpufStripeElements        = wpufStripe.elements();
-                    var wpufStripeCard            = wpufStripeElements.create('card');
+                    var wpufStripeCard            = wpufStripeElements.create('card', JSON.parse('<?php echo json_encode( $wpuf_stripe_css );?>') );
                     var displayError              = document.getElementById('wpuf-stripe-card-errors');
                     var displaySuccess            = document.getElementById('wpuf-stripe-card-success');
-
                     wpufStripeCard.mount('#card-element');
 
                     wpufStripeCard.addEventListener('change', function(event) {

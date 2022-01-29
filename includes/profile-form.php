@@ -34,8 +34,8 @@ class WPUF_Admin_Profile_Form_Pro {
      */
     public function __construct() {
         add_action( 'wpuf-form-builder-init-type-wpuf_profile', array( $this, 'init_pro' ) );
-        add_action( 'init', array($this, 'register_post_type') );
-        add_action( "load-user-frontend_page_wpuf-profile-forms", array( $this, 'profile_forms_builder_init' ) );
+        add_action( 'init', array( $this, 'register_post_type' ) );
+        add_action( 'load-user-frontend_page_wpuf-profile-forms', array( $this, 'profile_forms_builder_init' ) );
     }
 
     /**
@@ -58,43 +58,45 @@ class WPUF_Admin_Profile_Form_Pro {
     public function register_post_type() {
         $capability = wpuf_admin_role();
 
-        register_post_type( 'wpuf_profile', array(
-            'label'           => __( 'Registraton Forms', 'wpuf-pro' ),
-            'public'          => false,
-            'show_ui'         => false,
-            'show_in_menu'    => false,
-            'capability_type' => 'post',
-            'hierarchical'    => false,
-            'query_var'       => false,
-            'supports'        => array('title'),
-            'capabilities' => array(
-                'publish_posts'       => $capability,
-                'edit_posts'          => $capability,
-                'edit_others_posts'   => $capability,
-                'delete_posts'        => $capability,
-                'delete_others_posts' => $capability,
-                'read_private_posts'  => $capability,
-                'edit_post'           => $capability,
-                'delete_post'         => $capability,
-                'read_post'           => $capability,
-            ),
-            'labels' => array(
-                'name'               => __( 'Forms', 'wpuf-pro' ),
-                'singular_name'      => __( 'Form', 'wpuf-pro' ),
-                'menu_name'          => __( 'Registration Forms', 'wpuf-pro' ),
-                'add_new'            => __( 'Add Form', 'wpuf-pro' ),
-                'add_new_item'       => __( 'Add New Form', 'wpuf-pro' ),
-                'edit'               => __( 'Edit', 'wpuf-pro' ),
-                'edit_item'          => __( 'Edit Form', 'wpuf-pro' ),
-                'new_item'           => __( 'New Form', 'wpuf-pro' ),
-                'view'               => __( 'View Form', 'wpuf-pro' ),
-                'view_item'          => __( 'View Form', 'wpuf-pro' ),
-                'search_items'       => __( 'Search Form', 'wpuf-pro' ),
-                'not_found'          => __( 'No Form Found', 'wpuf-pro' ),
-                'not_found_in_trash' => __( 'No Form Found in Trash', 'wpuf-pro' ),
-                'parent'             => __( 'Parent Form', 'wpuf-pro' ),
-            ),
-        ) );
+        register_post_type(
+            'wpuf_profile', array(
+                'label'           => __( 'Registraton Forms', 'wpuf-pro' ),
+                'public'          => false,
+                'show_ui'         => false,
+                'show_in_menu'    => false,
+                'capability_type' => 'post',
+                'hierarchical'    => false,
+                'query_var'       => false,
+                'supports'        => array( 'title' ),
+                'capabilities' => array(
+                    'publish_posts'       => $capability,
+                    'edit_posts'          => $capability,
+                    'edit_others_posts'   => $capability,
+                    'delete_posts'        => $capability,
+                    'delete_others_posts' => $capability,
+                    'read_private_posts'  => $capability,
+                    'edit_post'           => $capability,
+                    'delete_post'         => $capability,
+                    'read_post'           => $capability,
+                ),
+                'labels' => array(
+                    'name'               => __( 'Forms', 'wpuf-pro' ),
+                    'singular_name'      => __( 'Form', 'wpuf-pro' ),
+                    'menu_name'          => __( 'Registration Forms', 'wpuf-pro' ),
+                    'add_new'            => __( 'Add Form', 'wpuf-pro' ),
+                    'add_new_item'       => __( 'Add New Form', 'wpuf-pro' ),
+                    'edit'               => __( 'Edit', 'wpuf-pro' ),
+                    'edit_item'          => __( 'Edit Form', 'wpuf-pro' ),
+                    'new_item'           => __( 'New Form', 'wpuf-pro' ),
+                    'view'               => __( 'View Form', 'wpuf-pro' ),
+                    'view_item'          => __( 'View Form', 'wpuf-pro' ),
+                    'search_items'       => __( 'Search Form', 'wpuf-pro' ),
+                    'not_found'          => __( 'No Form Found', 'wpuf-pro' ),
+                    'not_found_in_trash' => __( 'No Form Found in Trash', 'wpuf-pro' ),
+                    'parent'             => __( 'Parent Form', 'wpuf-pro' ),
+                ),
+            )
+        );
     }
 
     /**
@@ -105,7 +107,6 @@ class WPUF_Admin_Profile_Form_Pro {
      * @return void
      */
     public function profile_forms_builder_init() {
-
         if ( ! isset( $_GET['action'] ) ) {
             return;
         }
@@ -117,7 +118,6 @@ class WPUF_Admin_Profile_Form_Pro {
         }
 
         if ( ( 'edit' === $_GET['action'] ) && ! empty( $_GET['id'] ) ) {
-
             add_action( 'wpuf-form-builder-settings-tabs-profile', array( $this, 'add_settings_tabs' ) );
             add_action( 'wpuf-form-builder-settings-tab-contents-profile', array( $this, 'add_settings_tab_contents' ) );
             add_filter( 'wpuf-form-fields-section-before', array( $this, 'add_profile_field_section' ) );
@@ -136,9 +136,15 @@ class WPUF_Admin_Profile_Form_Pro {
                 'post_id'           => $_GET['id'],
                 'form_settings_key' => $this->form_settings_key,
                 'shortcodes'        => array(
-                    array( 'name' => 'wpuf_profile', 'type' => 'registration' ),
-                    array( 'name' => 'wpuf_profile', 'type' => 'profile' )
-                )
+                    array(
+                        'name' => 'wpuf_profile',
+                        'type' => 'registration',
+                    ),
+                    array(
+                        'name' => 'wpuf_profile',
+                        'type' => 'profile',
+                    ),
+                ),
             );
 
             new WPUF_Admin_Form_Builder( $settings );
@@ -208,7 +214,7 @@ class WPUF_Admin_Profile_Form_Pro {
 
         $form_settings = wpuf_get_form_settings( $post->ID );
 
-        $role_selected           = isset( $form_settings['role'] ) ? $form_settings['role'] : 'subscriber';
+        $role_selected = isset( $form_settings['role'] ) ? $form_settings['role'] : 'subscriber';
 
         // Multisteps
         $is_multistep_enabled    = isset( $form_settings['enable_multistep'] ) ? $form_settings['enable_multistep'] : '';
@@ -227,7 +233,7 @@ class WPUF_Admin_Profile_Form_Pro {
                         <?php
                         $user_roles = wpuf_get_user_roles();
                         foreach ( $user_roles as $role => $label ) {
-                            printf('<option value="%s"%s>%s</option>', $role, selected( $role_selected, $role, false ), $label );
+                            printf( '<option value="%s"%s>%s</option>', $role, selected( $role_selected, $role, false ), $label );
                         }
                         ?>
                     </select>
@@ -256,8 +262,8 @@ class WPUF_Admin_Profile_Form_Pro {
                 <td>
                     <label>
                         <select name="wpuf_settings[multistep_progressbar_type]">
-                            <option value="progressive" <?php echo $multistep_progress_type == 'progressive'? 'selected':'' ;?>><?php _e( 'Progressbar', 'wpuf-pro' ); ?></option>
-                            <option value="step_by_step" <?php echo $multistep_progress_type == 'step_by_step'? 'selected':'' ;?>><?php _e( 'Step by Step', 'wpuf-pro' ); ?></option>
+                            <option value="progressive" <?php echo $multistep_progress_type == 'progressive' ? 'selected' : ''; ?>><?php _e( 'Progressbar', 'wpuf-pro' ); ?></option>
+                            <option value="step_by_step" <?php echo $multistep_progress_type == 'step_by_step' ? 'selected' : ''; ?>><?php _e( 'Step by Step', 'wpuf-pro' ); ?></option>
                         </select>
                     </label>
 
@@ -317,7 +323,7 @@ class WPUF_Admin_Profile_Form_Pro {
     public function form_settings_notification() {
         global $post;
 
-        $blogname                = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+        $blogname                = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
         $form_settings           = wpuf_get_form_settings( $post->ID );
         $user_notification       = isset( $form_settings['user_notification'] ) ? $form_settings['user_notification'] : 'on';
         $admin_notification      = isset( $form_settings['admin_notification'] ) ? $form_settings['admin_notification'] : 'on';
@@ -326,29 +332,38 @@ class WPUF_Admin_Profile_Form_Pro {
         $verification_mail_body  = "Congrats! You are Successfully registered to {blogname}\r\n\r\n";
         $verification_mail_body .= "To activate your account, please click the link below\r\n";
         $verification_mail_body .= "{activation_link}\r\n\r\n";
-        $verification_mail_body .= "Thanks!";
+        $verification_mail_body .= 'Thanks!';
 
         $verification_subject    = isset( $form_settings['notification']['verification_subject'] ) ? $form_settings['notification']['verification_subject'] : __( 'Account Activation', 'wpuf-pro' );
         $verification_body       = isset( $form_settings['notification']['verification_body'] ) ? $form_settings['notification']['verification_body'] : $verification_mail_body;
 
         $welcome_mail_body       = "Hi %username%,\r\n\r\n";
-        $welcome_mail_body      .= "Congrats! You are Successfully registered to ". $blogname ."\r\n\r\n";
-        $welcome_mail_body      .= "Thanks";
+        $welcome_mail_body      .= 'Congrats! You are Successfully registered to ' . $blogname . "\r\n\r\n";
+        $welcome_mail_body      .= 'Thanks';
 
         $welcome_email_subject   = isset( $form_settings['notification']['welcome_email_subject'] ) ? $form_settings['notification']['welcome_email_subject'] : __( 'Thank you for registering', 'wpuf-pro' );
         $welcome_email_body      = isset( $form_settings['notification']['welcome_email_body'] ) ? $form_settings['notification']['welcome_email_body'] : $welcome_mail_body;
 
         $pending_user_admin_notification       = "Username: %username% (%user_email%) has requested a username.\r\n\r\n";
         $pending_user_admin_notification      .= "To approve or deny this user access go to %pending_users%\r\n\r\n";
-        $pending_user_admin_notification      .= "Thanks";
+        $pending_user_admin_notification      .= 'Thanks';
 
         $approved_user_admin_notification       = "Username: %username% (%user_email%) has requested a username.\r\n\r\n";
         $approved_user_admin_notification      .= "To pending or deny this user access go to %approved_users%\r\n\r\n";
-        $approved_user_admin_notification      .= "Thanks";
+        $approved_user_admin_notification      .= 'Thanks';
 
         $admin_email_subject                   = isset( $form_settings['notification']['admin_email_subject'] ) ? $form_settings['notification']['admin_email_subject'] : __( 'New user registered on your site', 'wpuf-pro' );
         $pending_user_admin_notification       = isset( $form_settings['notification']['admin_email_body']['user_status_pending'] ) ? $form_settings['notification']['admin_email_body']['user_status_pending'] : $pending_user_admin_notification;
         $approved_user_admin_notification      = isset( $form_settings['notification']['admin_email_body']['user_status_approved'] ) ? $form_settings['notification']['admin_email_body']['user_status_approved'] : $approved_user_admin_notification;
+        $editor_settings                       = [
+            'textarea_rows' => 10,
+            'teeny' => true,
+            'tinymce' => [
+                'autoresize_min_height' => 100,
+                'wp_autoresize_on' => true,
+                'plugins' => 'wpautoresize',
+            ],
+        ];
 
         ?>
 
@@ -384,27 +399,27 @@ class WPUF_Admin_Profile_Form_Pro {
 
             <tr class="wpuf-email-verification-settings-fields">
                 <th><?php _e( 'Confirmation mail subject', 'wpuf-pro' ); ?></th>
-                <td><input type="text" name="wpuf_settings[notification][verification_subject]" class="regular-text" value="<?php echo esc_attr( $verification_subject ) ?>"></td>
+                <td><input type="text" name="wpuf_settings[notification][verification_subject]" class="regular-text" value="<?php echo esc_attr( $verification_subject ); ?>"></td>
             </tr>
 
             <tr class="wpuf-email-verification-settings-fields">
                 <th><?php _e( 'Confirmation mail body', 'wpuf-pro' ); ?></th>
                 <td>
-                    <textarea rows="8" cols="60" name="wpuf_settings[notification][verification_body]"><?php echo esc_textarea( $verification_body ) ?></textarea>
+                    <?php wp_editor( $verification_body, 'wpuf_verification_body_' . $post->ID, array_merge( [ 'textarea_name' => 'wpuf_settings[notification][verification_body]' ], $editor_settings ) ); ?>
                     <p class="description"><?php _e( 'You may use: {username}{blogname}{activation_link}', 'wpuf-pro' ); ?></p>
                 </td>
             </tr>
 
             <tr class="wpuf-welcome-email-settings-fields">
                 <th><?php _e( 'Welcome mail subject', 'wpuf-pro' ); ?></th>
-                <td><input type="text" name="wpuf_settings[notification][welcome_email_subject]" class="regular-text" value="<?php echo esc_attr( $welcome_email_subject ) ?>"></td>
+                <td><input type="text" name="wpuf_settings[notification][welcome_email_subject]" class="regular-text" value="<?php echo esc_attr( $welcome_email_subject ); ?>"></td>
             </tr>
 
             <tr class="wpuf-welcome-email-settings-fields">
                 <th><?php _e( 'Welcome mail body', 'wpuf-pro' ); ?></th>
                 <td>
-                    <textarea rows="8" cols="60" name="wpuf_settings[notification][welcome_email_body]"><?php echo esc_textarea( $welcome_email_body ) ?></textarea>
-                    <p class="description"><?php _e( 'You may use: %username% %user_email% %display_name% %user_status% %pending_users% %approved_users% %denied_users%', 'wpuf-pro' ); ?></p>
+                    <?php wp_editor( $welcome_email_body, 'wpuf_welcome_email_body_' . $post->ID, array_merge( [ 'textarea_name' => 'wpuf_settings[notification][welcome_email_body]' ], $editor_settings ) ); ?>
+                    <p class="description"><?php _e( 'You may use: %$username% %$user_email% %$display_name% %$user_status% %pending_users% %approved_users% %$denied_users%', 'wpuf-pro' ); ?></p>
                 </td>
             </tr>
 
@@ -427,15 +442,15 @@ class WPUF_Admin_Profile_Form_Pro {
 
             <tr class="wpuf-new-user-admin-notification subject">
                 <th><?php _e( 'Subject', 'wpuf-pro' ); ?></th>
-                <td><input type="text" name="wpuf_settings[notification][admin_email_subject]" class="regular-text" value="<?php echo esc_attr( $admin_email_subject ) ?>"></td>
+                <td><input type="text" name="wpuf_settings[notification][admin_email_subject]" class="regular-text" value="<?php echo esc_attr( $admin_email_subject ); ?>"></td>
             </tr>
 
             <tr class="wpuf-new-user-admin-notification content">
                 <th><?php _e( 'Message', 'wpuf-pro' ); ?></th>
                 <td>
-                    <textarea rows="8" cols="60" id="wpuf_pending_user_admin_notification" name="wpuf_settings[notification][admin_email_body][user_status_pending]"><?php echo esc_textarea( $pending_user_admin_notification ) ?></textarea>
-                    <textarea rows="8" cols="60" id="wpuf_approved_user_admin_notification" name="wpuf_settings[notification][admin_email_body][user_status_approved]"><?php echo esc_textarea( $approved_user_admin_notification ) ?></textarea>
-                    <p class="description"><?php _e( 'You may use: %username% %user_email% %display_name% %user_status% %pending_users% %approved_users% %denied_users%', 'wpuf-pro' ); ?></p>
+                    <textarea rows="8" cols="60" id="wpuf_pending_user_admin_notification" name="wpuf_settings[notification][admin_email_body][user_status_pending]"><?php echo esc_textarea( $pending_user_admin_notification ); ?></textarea>
+                    <textarea rows="8" cols="60" id="wpuf_approved_user_admin_notification" name="wpuf_settings[notification][admin_email_body][user_status_approved]"><?php echo esc_textarea( $approved_user_admin_notification ); ?></textarea>
+                    <p class="description"><?php _e( 'You may use: %1$username% %2$user_email% %3$display_name% %4$user_status% %pending_users% %approved_users% %5$denied_users%', 'wpuf-pro' ); ?></p>
                 </td>
             </tr>
 
@@ -458,7 +473,7 @@ class WPUF_Admin_Profile_Form_Pro {
 
         $form_settings = wpuf_get_form_settings( $post->ID );
 
-        $redirect_to        = isset( $form_settings['reg_redirect_to'] ) ? $form_settings['reg_redirect_to'] : 'post';
+        $redirect_to = isset( $form_settings['reg_redirect_to'] ) ? $form_settings['reg_redirect_to'] : 'post';
 
         if ( ! isset( $form_settings['reg_redirect_to'] ) ) {
             $redirect_to = isset( $form_settings['reg_redirect_to'] ) ? $form_settings['reg_redirect_to'] : 'post';
@@ -486,16 +501,16 @@ class WPUF_Admin_Profile_Form_Pro {
                     $redirect_options = array(
                         'same' => __( 'Same Page', 'wpuf-pro' ),
                         'page' => __( 'To a page', 'wpuf-pro' ),
-                        'url' => __( 'To a custom URL', 'wpuf-pro' )
-                        );
+                        'url' => __( 'To a custom URL', 'wpuf-pro' ),
+                    );
 
                     foreach ( $redirect_options as $to => $label ) {
-                        printf('<option value="%s"%s>%s</option>', $to, selected( $redirect_to, $to, false ), $label );
+                        printf( '<option value="%s"%s>%s</option>', $to, selected( $redirect_to, $to, false ), $label );
                     }
                     ?>
                     </select>
                     <div class="description">
-                        <?php _e( 'After successfull submit, where the page will redirect to', 'wpuf-pro' ) ?>
+                        <?php _e( 'After successfull submit, where the page will redirect to', 'wpuf-pro' ); ?>
                     </div>
                 </td>
             </tr>
@@ -512,10 +527,15 @@ class WPUF_Admin_Profile_Form_Pro {
                 <td>
                     <select name="wpuf_settings[reg_page_id]">
                     <?php
-                    $pages = get_posts(  array( 'numberposts' => -1, 'post_type' => 'page') );
+                    $pages = get_posts(
+                        array(
+                            'numberposts' => -1,
+                            'post_type' => 'page',
+                        )
+                    );
 
-                    foreach ($pages as $page) {
-                        printf('<option value="%s"%s>%s</option>', $page->ID, selected( $page_id, $page->ID, false ), esc_attr( $page->post_title ) );
+                    foreach ( $pages as $page ) {
+                        printf( '<option value="%s"%s>%s</option>', $page->ID, selected( $page_id, $page->ID, false ), esc_attr( $page->post_title ) );
                     }
                     ?>
                 </select>
@@ -538,7 +558,7 @@ class WPUF_Admin_Profile_Form_Pro {
 
             <?php do_action( 'wpuf_profile_setting_reg', $form_settings, $post ); ?>
         </table>
-    <?php
+        <?php
     }
 
     /**
@@ -554,10 +574,10 @@ class WPUF_Admin_Profile_Form_Pro {
 
         $form_settings = wpuf_get_form_settings( $post->ID );
 
-        $redirect_to             = isset( $form_settings['profile_redirect_to'] ) ? $form_settings['profile_redirect_to'] : 'post';
+        $redirect_to = isset( $form_settings['profile_redirect_to'] ) ? $form_settings['profile_redirect_to'] : 'post';
 
         if ( ! isset( $form_settings['reg_redirect_to'] ) ) {
-            $redirect_to         = isset( $form_settings['profile_redirect_to'] ) ? $form_settings['profile_redirect_to'] : 'post';
+            $redirect_to = isset( $form_settings['profile_redirect_to'] ) ? $form_settings['profile_redirect_to'] : 'post';
         }
 
         $update_message          = isset( $form_settings['update_message'] ) ? $form_settings['update_message'] : __( 'Profile updated successfully', 'wpuf-pro' );
@@ -568,8 +588,7 @@ class WPUF_Admin_Profile_Form_Pro {
             $url = isset( $form_settings['url'] ) ? $form_settings['url'] : '';
         }
 
-
-        $update_text             = isset( $form_settings['update_text'] ) ? $form_settings['update_text'] : __( 'Update Profile', 'wpuf-pro' );
+        $update_text = isset( $form_settings['update_text'] ) ? $form_settings['update_text'] : __( 'Update Profile', 'wpuf-pro' );
 
         $ms_ac_txt_color         = isset( $form_settings['ms_ac_txt_color'] ) ? $form_settings['ms_ac_txt_color'] : '#ffffff';
         $ms_active_bgcolor       = isset( $form_settings['ms_active_bgcolor'] ) ? $form_settings['ms_active_bgcolor'] : '#00a0d2';
@@ -584,16 +603,16 @@ class WPUF_Admin_Profile_Form_Pro {
                     $redirect_options = array(
                         'same' => __( 'Same Page', 'wpuf-pro' ),
                         'page' => __( 'To a page', 'wpuf-pro' ),
-                        'url'  => __( 'To a custom URL', 'wpuf-pro' )
+                        'url'  => __( 'To a custom URL', 'wpuf-pro' ),
                     );
 
                     foreach ( $redirect_options as $to => $label ) {
-                        printf('<option value="%s"%s>%s</option>', $to, selected( $redirect_to, $to, false ), $label );
+                        printf( '<option value="%s"%s>%s</option>', $to, selected( $redirect_to, $to, false ), $label );
                     }
                     ?>
                     </select>
                     <div class="description">
-                        <?php _e( 'After successfull submit, where the page will redirect to', 'wpuf-pro' ) ?>
+                        <?php _e( 'After successfull submit, where the page will redirect to', 'wpuf-pro' ); ?>
                     </div>
                 </td>
             </tr>
@@ -610,10 +629,15 @@ class WPUF_Admin_Profile_Form_Pro {
                 <td>
                     <select name="wpuf_settings[profile_page_id]">
                     <?php
-                    $pages = get_posts(  array( 'numberposts' => -1, 'post_type' => 'page') );
+                    $pages = get_posts(
+                        array(
+                            'numberposts' => -1,
+                            'post_type' => 'page',
+                        )
+                    );
 
                     foreach ( $pages as $page ) {
-                        printf('<option value="%s"%s>%s</option>', $page->ID, selected( $page_id, $page->ID, false ), esc_attr( $page->post_title ) );
+                        printf( '<option value="%s"%s>%s</option>', $page->ID, selected( $page_id, $page->ID, false ), esc_attr( $page->post_title ) );
                     }
                     ?>
                     </select>
@@ -636,10 +660,10 @@ class WPUF_Admin_Profile_Form_Pro {
 
             <?php do_action( 'wpuf_profile_setting_profile', $form_settings, $post ); ?>
         </table>
-    <?php
+        <?php
     }
 
-    public function form_settings_reg_display_settings () {
+    public function form_settings_reg_display_settings() {
         global $post;
 
         $form_settings  = wpuf_get_form_settings( get_the_ID() );
@@ -660,14 +684,14 @@ class WPUF_Admin_Profile_Form_Pro {
                             'hidden' => __( 'Hidden', 'wpuf-pro' ),
                         );
 
-                        foreach ($positions as $to => $label) {
-                            printf('<option value="%s"%s>%s</option>', $to, selected( $label_position, $to, false ), $label );
+                        foreach ( $positions as $to => $label ) {
+                            printf( '<option value="%s"%s>%s</option>', $to, selected( $label_position, $to, false ), $label );
                         }
                         ?>
                     </select>
 
                     <p class="description">
-                        <?php _e( 'Where the labels of the form should display', 'wpuf-pro' ) ?>
+                        <?php _e( 'Where the labels of the form should display', 'wpuf-pro' ); ?>
                     </p>
                 </td>
             </tr>
@@ -682,14 +706,14 @@ class WPUF_Admin_Profile_Form_Pro {
                             'wpuf-theme-style'   => __( 'Yes', 'wpuf' ),
                         );
 
-                        foreach ($options as $to => $label) {
-                            printf('<option value="%s"%s>%s</option>', $to, selected( $theme_css, $to, false ), $label );
+                        foreach ( $options as $to => $label ) {
+                            printf( '<option value="%s"%s>%s</option>', $to, selected( $theme_css, $to, false ), $label );
                         }
                         ?>
                     </select>
 
                     <p class="description">
-                        <?php _e( 'Selecting "Yes" will use your theme\'s style for form fields.', 'wpuf' ) ?>
+                        <?php _e( 'Selecting "Yes" will use your theme\'s style for form fields.', 'wpuf' ); ?>
                     </p>
                 </td>
             </tr>
@@ -707,7 +731,7 @@ class WPUF_Admin_Profile_Form_Pro {
                                 'layout5' => WPUF_PRO_ASSET_URI . '/images/forms/layout5.png',
                             ];
 
-                            foreach ($layouts as $key => $image) {
+                            foreach ( $layouts as $key => $image ) {
                                 $active = '';
 
                                 if ( $key == $form_layout ) {
@@ -715,13 +739,13 @@ class WPUF_Admin_Profile_Form_Pro {
                                 }
 
                                 $output  = '<li class="' . $active . '">';
-                                $output .= '<input type="radio" name="wpuf_settings[profile_form_layout]" value="' . $key . '" ' . checked( $form_layout, $key, false ). '>';
+                                $output .= '<input type="radio" name="wpuf_settings[profile_form_layout]" value="' . $key . '" ' . checked( $form_layout, $key, false ) . '>';
                                 $output .= '<img src="' . $image . '" alt="">';
                                 $output .= '</li>';
 
                                 echo $output;
                             }
-                        ?>
+                            ?>
                     </ul>
                 </td>
             </tr>
@@ -738,16 +762,27 @@ class WPUF_Admin_Profile_Form_Pro {
      * @return array
      */
     public function add_profile_field_section() {
-        $profile_fields = apply_filters( 'wpuf-form-builder-wp_profile-fields-section-post-fields', array(
-            'user_login', 'first_name', 'last_name', 'display_name', 'nickname', 'user_email', 'user_url', 'user_bio', 'password', 'avatar'
-        ) );
+        $profile_fields = apply_filters(
+            'wpuf-form-builder-wp_profile-fields-section-post-fields', array(
+                'user_login',
+                'first_name',
+                'last_name',
+                'display_name',
+                'nickname',
+                'user_email',
+                'user_url',
+                'user_bio',
+                'password',
+                'avatar',
+            )
+        );
 
         return array(
             array(
                 'title'     => __( 'Profile Fields', 'wpuf-pro' ),
                 'id'        => 'profile-fields',
-                'fields'    => $profile_fields
-            )
+                'fields'    => $profile_fields,
+            ),
         );
     }
 
@@ -765,7 +800,7 @@ class WPUF_Admin_Profile_Form_Pro {
             array( 'jquery', 'underscore', 'wpuf-vue', 'wpuf-vuex' ),
             WPUF_PRO_VERSION,
             true
-            );
+        );
     }
 
     /**
@@ -793,7 +828,7 @@ class WPUF_Admin_Profile_Form_Pro {
      * @return array
      */
     public function js_root_mixins( $mixins ) {
-        array_push( $mixins , 'wpuf_forms_mixin_root' );
+        array_push( $mixins, 'wpuf_forms_mixin_root' );
 
         return $mixins;
     }
@@ -808,7 +843,7 @@ class WPUF_Admin_Profile_Form_Pro {
      * @return array
      */
     public function js_builder_stage_mixins( $mixins ) {
-        array_push( $mixins , 'wpuf_forms_mixin_builder_stage' );
+        array_push( $mixins, 'wpuf_forms_mixin_builder_stage' );
 
         return $mixins;
     }
@@ -846,9 +881,11 @@ class WPUF_Admin_Profile_Form_Pro {
      * @return array
      */
     public function i18n( $i18n ) {
-        return array_merge( $i18n, array(
-            'email_needed' => __( 'Profile Forms must have Email field', 'wpuf-pro' )
-            ) );
+        return array_merge(
+            $i18n, array(
+                'email_needed' => __( 'Profile Forms must have Email field', 'wpuf-pro' ),
+            )
+        );
     }
 
 }
